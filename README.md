@@ -3,4 +3,7 @@ Repertorio criado para a realização do Trabalho de engenharia de software ( 4�
 
 # Equipe:
 Bruno Santos Moraes,
-Fabio Fernandes Reis Filho
+Fabio Fernandes Reis Filho,
+João Honório,
+Ephrem Matheus
+
