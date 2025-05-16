@@ -1,0 +1,93 @@
+import sqlite3
+
+def criar_banco():
+    conn = sqlite3.connect('gamebox.db')
+    cursor = conn.cursor()
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS usuarios (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE NOT NULL,
+        senha TEXT NOT NULL,
+        steam_id TEXT UNIQUE
+    )
+    ''')
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS jogos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL,
+        genero TEXT,
+        plataforma TEXT,
+        usuario_id INTEGER,
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+    )
+    ''')
+
+    conn.commit()
+    conn.close()
+
+def inserir_usuario(email, senha, steam_id):
+    conn = sqlite3.connect('gamebox.db')
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO usuarios (email, senha, steam_id) VALUES (?, ?, ?)', (email, senha, steam_id))
+    conn.commit()
+    usuario_id = cursor.lastrowid
+    conn.close()
+    return usuario_id
+
+def inserir_jogo(nome, genero, plataforma, usuario_id):
+    conn = sqlite3.connect('gamebox.db')
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO jogos (nome, genero, plataforma, usuario_id) VALUES (?, ?, ?, ?)', (nome, genero, plataforma, usuario_id))
+    conn.commit()
+    conn.close()
+
+def login(email, senha):
+    conn = sqlite3.connect('gamebox.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM usuarios WHERE email = ? AND senha = ?', (email, senha))
+    usuario = cursor.fetchone()
+    conn.close()
+    return usuario is not None
+
+def atualizar_senha(email, nova_senha):
+    conn = sqlite3.connect('gamebox.db')
+    cursor = conn.cursor()
+    cursor.execute('UPDATE usuarios SET senha = ? WHERE email = ?', (nova_senha, email))
+    conn.commit()
+    conn.close()
+
+def deletar_jogo(nome_do_jogo):
+    conn = sqlite3.connect('gamebox.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM jogos WHERE nome = ?', (nome_do_jogo,))
+    conn.commit()
+    conn.close()
+
+def listar_jogos_por_usuario(email):
+    conn = sqlite3.connect('gamebox.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+    SELECT jogos.nome, jogos.genero, jogos.plataforma
+    FROM jogos
+    JOIN usuarios ON jogos.usuario_id = usuarios.id
+    WHERE usuarios.email = ?
+    ''', (email,))
+    jogos = cursor.fetchall()
+    conn.close()
+    return jogos
+
+def listar_todos_os_jogos():
+    conn = sqlite3.connect('gamebox.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+    SELECT jogos.nome, jogos.genero, jogos.plataforma, usuarios.email
+    FROM jogos
+    JOIN usuarios ON jogos.usuario_id = usuarios.id
+    ''')
+    jogos = cursor.fetchall()
+    conn.close()
+    return jogos
+
+criar_banco()
