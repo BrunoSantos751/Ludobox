@@ -1,0 +1,15 @@
+<h1>Login</h1>
+<a href="{{ url_for('login') }}">Login via Steam</a>
+<br><br>
+<form method="POST" action="/login_email">
+    <input type="email" name="email" placeholder="Email" required><br>
+    <input type="password" name="password" placeholder="Senha" required><br>
+    <button type="submit">Entrar com Email</button>
+</form>
+<br>
+<form method="POST" action="/register">
+    <input type="nome" name="nome" placeholder="digite seu nome" required><br>
+    <input type="email" name="email" placeholder="Novo Email" required><br>
+    <input type="password" name="password" placeholder="Nova Senha" required><br>
+    <button type="submit">Registrar</button>
+</form>

@@ -3,7 +3,7 @@ import sqlite3
 import requests
 import re
 from werkzeug.security import generate_password_hash, check_password_hash
-from dados import listar_usuarios_email, registrar_usuario,registrar_usuario_steam
+from comandos_dados import listar_usuarios_email, registrar_usuario,registrar_usuario_steam
 
 app = Flask(__name__)
 app.secret_key = 'sua_chave_secreta'
