@@ -1,0 +1,154 @@
+/* Estilos para o componente Register */
+:root {
+  --primary-color: #FF6600;
+  --background-color: #000000;
+  --text-color: #FFFFFF;
+  --input-background: #1A1A1A;
+  --error-color: #FF3333;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.register-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.logo-completo {
+  width: 280px; /* Tamanho ajustado para a nova imagem completa */
+  height: auto; /* Altura automática para manter a proporção original */
+  object-fit: contain; /* Garante que a imagem mantenha sua proporção */
+}
+
+.title {
+  color: var(--primary-color);
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.register-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  width: 100%;
+}
+
+input {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 5px;
+  background-color: var(--input-background);
+  color: var(--text-color);
+  font-size: 1.1rem;
+}
+
+input::placeholder {
+  color: #888;
+}
+
+input:focus {
+  outline: 1px solid var(--primary-color);
+}
+
+.input-error {
+  border: 1px solid var(--error-color);
+}
+
+.error-message {
+  color: var(--error-color);
+  font-size: 0.8rem;
+  margin-top: 5px;
+  display: block;
+}
+
+.register-button {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 5px;
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.3s;
+}
+
+.register-button:hover {
+  background-color: #FF7F00;
+}
+
+.login-link {
+  margin-top: 20px;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.login-link a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .register-container {
+    padding: 15px;
+    max-width: 400px;
+  }
+  
+  .logo-completo {
+    width: 220px; /* Tamanho reduzido para telas menores */
+  }
+  
+  .title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-container {
+    padding: 10px;
+  }
+  
+  .logo-completo {
+    width: 180px; /* Tamanho ainda menor para telas muito pequenas */
+  }
+  
+  .title {
+    font-size: 1.8rem;
+  }
+}
