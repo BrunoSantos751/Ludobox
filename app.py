@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from comandos_dados import listar_usuarios_email, registrar_usuario,registrar_usuario_steam
 
 app = Flask(__name__)
-app.secret_key = 'sua_chave_secreta'
+app.secret_key = 'Ludobox'
 
 STEAM_API_KEY = '8C9877E691C84ED816FEF5D1B80A842B'
 RETURN_URL = 'http://localhost:5000/authorize'

@@ -54,7 +54,7 @@ def listar_usuarios_nome(nome):
     conn.close()
     return emailReturn
 
-print(listar_usuarios_nome('lilofox'))
+#print(listar_usuarios_nome('lilofox'))
 
 def atualizar_usuario(id_usuario, nome=None, email=None, senha=None, bio=None, avatar_url=None):
     conn = conectar()
@@ -138,7 +138,7 @@ def deletar_user_game(id_user_game):
     conn.commit()
     conn.close()
 
-# ===================== REVIEWS =====================
+# ===================== Avaliacoes =====================
 
 def criar_review(user_id, game_id, titulo='', texto='', nota=None):
     conn = conectar()
@@ -273,7 +273,7 @@ def deletar_jogo_da_lista(id_list_game):
 
 
 
-
+#comandos para criar as tables
 def init_db():
         conn = conectar()
         c = conn.cursor()
@@ -290,3 +290,23 @@ def init_db():
             )
         """)
         conn.commit()
+
+def review():
+    conn = conectar()
+    c = conn.cursor()
+
+    c.execute(""" 
+        CREATE TABLE IF NOT EXISTS avaliacoes (
+            avaliacao_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INT,
+            nota INT,
+            comentario TEXT,
+            nome_jogo TEXT,
+            likes INTEGER DEFAULT 0,
+            data_avaliacao TEXT DEFAULT (datetime('now')),
+            FOREIGN KEY (user_id) REFERENCES usuarios(user_id)
+        )
+    """)
+
+    conn.commit()
+    conn.close()
