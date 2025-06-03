@@ -1,13 +1,16 @@
-import './App.css'
-import Home from './components/Home/Home'
+import { useState } from 'react';
+import Home from './components/Home/Home';
+import Register from './components/Register/Register';
 
 function App() {
+  const [currentPage, setCurrentPage] = useState('home');
 
   return (
     <>
-      <Home />
+      {currentPage === 'home' && <Home onEntrarClick={() => setCurrentPage('register')} />}
+      {currentPage === 'register' && <Register />}
     </>
-  )
+  );
 }
 
-export default App
+export default App;
