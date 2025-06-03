@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+
+.navbar-container {
+  font-family: 'Rubik', sans-serif;
+}
+
+
+.navbar-logo > a > img {
+    width: 100px;
+    height: 100px;
+}
+
+.navbar-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-links > ul{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    width: 900px;
+}
+
+.navbar-links > ul > li{
+    list-style-type: none;
+    cursor: pointer;
+    
+    
+}
+
+.navbar-links a{
+    text-decoration:none;
+    color: white;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+.login-steam{
+    margin-right: -50px;
+    gap: 8px;
+}
+
+.login-steam > a{
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.login-steam > a > img {
+    margin-top: 2px;
+    width: 22px;
+    height: 22px;
+}
+
+.navbar-links > ul > li> a:hover{
+    border-bottom: 2px solid #DC7000;
+}
+
+.login-button > button{
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: none;
+    border: none;
+    color: white;
+    width: 130px;
+    background-color: #FA9021;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.login-button > button:hover{
+    background-color: #dd801c
+}
