@@ -6,7 +6,6 @@ export default function Home({ onEntrarClick }) {
       <Navbar onEntrarClick={onEntrarClick} />
       <main>
         {/* Conteúdo da homepage */}
-        <h1>Bem-vindo à Ludobox</h1>
       </main>
     </>
   );
