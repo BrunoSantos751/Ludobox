@@ -1,0 +1,122 @@
+import sqlite3
+from datetime import datetime
+
+# Caminho para o banco de dados
+DB_PATH = 'catalogo_jogos.db'
+
+# Conectar ao banco
+def conectar():
+    return sqlite3.connect(DB_PATH)
+
+# ===================== USERS =====================
+
+# ===================== FOLLOWS =====================
+
+def criar_follow(seguidor_id, seguindo_id):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO follows (seguidor_id, seguindo_id)
+        VALUES (?, ?)
+    """, (seguidor_id, seguindo_id))
+    conn.commit()
+    conn.close()
+
+def listar_follows():
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, seguidor_id, seguindo_id FROM follows")
+    follows = cursor.fetchall()
+    conn.close()
+    return follows
+
+def deletar_follow(id_follow):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM follows WHERE id = ?", (id_follow,))
+    conn.commit()
+    conn.close()
+
+def listar_seguidores(user_id):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT users.id, users.nome FROM follows
+        JOIN users ON follows.seguidor_id = users.id
+        WHERE follows.seguindo_id = ?
+    """, (user_id,))
+    seguidores = cursor.fetchall()
+    conn.close()
+    return seguidores
+
+def listar_seguindo(user_id):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT users.id, users.nome FROM follows
+        JOIN users ON follows.seguindo_id = users.id
+        WHERE follows.seguidor_id = ?
+    """, (user_id,))
+    seguindo = cursor.fetchall()
+    conn.close()
+    return seguindo
+
+# ===================== ATIVIDADES SOCIAIS =====================
+
+def jogo_atual(user_id):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT games.nome FROM user_games
+        JOIN games ON user_games.game_id = games.id
+        WHERE user_games.user_id = ? AND user_games.status = 'jogando'
+        ORDER BY user_games.criado_em DESC LIMIT 1
+    """, (user_id,))
+    resultado = cursor.fetchone()
+    conn.close()
+    return resultado[0] if resultado else None
+
+def jogo_favorito(user_id):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT games.nome FROM user_games
+        JOIN games ON user_games.game_id = games.id
+        WHERE user_games.user_id = ? AND user_games.nota IS NOT NULL
+        ORDER BY user_games.nota DESC, user_games.criado_em DESC LIMIT 1
+    """, (user_id,))
+    resultado = cursor.fetchone()
+    conn.close()
+    return resultado[0] if resultado else None
+
+def ultimas_atividades(user_id, limite=5):
+    conn = conectar()
+    cursor = conn.cursor()
+    atividades = []
+
+    cursor.execute("""
+        SELECT 'Review', titulo, criado_em FROM reviews
+        WHERE user_id = ?
+        ORDER BY criado_em DESC LIMIT ?
+    """, (user_id, limite))
+    atividades += cursor.fetchall()
+
+    cursor.execute("""
+        SELECT 'Jogo', status || ': ' || games.nome, user_games.criado_em
+        FROM user_games
+        JOIN games ON user_games.game_id = games.id
+        WHERE user_games.user_id = ?
+        ORDER BY user_games.criado_em DESC LIMIT ?
+    """, (user_id, limite))
+    atividades += cursor.fetchall()
+
+    cursor.execute("""
+        SELECT 'Lista', nome, criado_em FROM lists
+        WHERE user_id = ?
+        ORDER BY criado_em DESC LIMIT ?
+    """, (user_id, limite))
+    atividades += cursor.fetchall()
+
+    atividades.sort(key=lambda x: x[2], reverse=True)
+    conn.close()
+    return atividades[:limite]
