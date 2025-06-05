@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import './Register.css';
 
-
 function Register() {
   const [formData, setFormData] = useState({
     nome: '',
@@ -10,6 +9,8 @@ function Register() {
   });
   
   const [errors, setErrors] = useState({});
+  const [serverMessage, setServerMessage] = useState('');  // Mensagem do backend
+  const [loading, setLoading] = useState(false); // Para indicar carregamento
   
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -42,20 +43,40 @@ function Register() {
     return Object.keys(newErrors).length === 0;
   };
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
+    setServerMessage('');
+    
     if (validateForm()) {
-      // Aqui você pode implementar a lógica de cadastro
-      console.log('Formulário enviado:', formData);
-      alert('Cadastro realizado com sucesso!');
+      setLoading(true);
       
-      // Limpar o formulário após o envio
-      setFormData({
-        nome: '',
-        email: '',
-        senha: ''
-      });
+      try {
+        const response = await fetch('http://localhost:8080/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nome: formData.nome,
+            email: formData.email,
+            password: formData.senha // campo 'password' para backend
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          setServerMessage(data.message);  // Sucesso
+          setFormData({ nome: '', email: '', senha: '' }); // Limpa formulário
+          setErrors({});
+        } else {
+          setServerMessage(data.message);  // Erro do backend (ex: email já cadastrado)
+        }
+      } catch (error) {
+        setServerMessage('Erro na comunicação com o servidor.');
+        console.error('Erro:', error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
   
@@ -76,6 +97,7 @@ function Register() {
             onChange={handleChange}
             placeholder="Nome"
             className={errors.nome ? 'input-error' : ''}
+            disabled={loading}
           />
           {errors.nome && <span className="error-message">{errors.nome}</span>}
         </div>
@@ -88,6 +110,7 @@ function Register() {
             onChange={handleChange}
             placeholder="Endereço de e-mail"
             className={errors.email ? 'input-error' : ''}
+            disabled={loading}
           />
           {errors.email && <span className="error-message">{errors.email}</span>}
         </div>
@@ -100,14 +123,17 @@ function Register() {
             onChange={handleChange}
             placeholder="Senha"
             className={errors.senha ? 'input-error' : ''}
+            disabled={loading}
           />
           {errors.senha && <span className="error-message">{errors.senha}</span>}
         </div>
         
-        <button type="submit" className="register-button">
-          Cadastrar
+        <button type="submit" className="register-button" disabled={loading}>
+          {loading ? 'Cadastrando...' : 'Cadastrar'}
         </button>
       </form>
+      
+      {serverMessage && <p className="server-message">{serverMessage}</p>}
       
       <p className="login-link">
         Já tem uma conta: <a href="#">Clique aqui</a>
