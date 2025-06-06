@@ -1,0 +1,91 @@
+.melhorAvaliados {
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+}
+
+li{
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.headermA {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.headermA h2 {
+  font-size: 1.8rem;
+  color: #333;
+}
+
+.cards-Ma {
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-x: auto;
+}
+
+.card-Ma {
+    width: 189px;
+  height: 320px;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+
+
+.jogo-poster img:hover{
+  opacity: 80%;
+  cursor: pointer;
+}
+
+
+.jogo-poster img {
+  width: 189px;
+  height: 217px;
+  border-radius:20px ;
+  object-fit: cover;
+  display: block;
+}
+
+.jogo-infos {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: center;
+  padding: 1rem;
+}
+
+.jogo-name {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #d8d8d8;
+  margin: 0 0 0.5rem 0;
+}
+
+.jogo-nota {
+  font-size: 0.95rem;
+  color: #ffe924;
+  margin-bottom: 0.8rem;
+}
+
+.hidden-content {
+  display: none;
+}
+
+.star{
+   font-size: 0.95rem;
+  color: #ffe924;
+  margin-bottom: 0.8rem; 
+}
+
+
+
+
+
