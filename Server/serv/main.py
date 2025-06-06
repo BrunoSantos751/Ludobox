@@ -13,7 +13,7 @@ RAWG_API_KEY = '7221b0332ccb4921ad5eb4f3da1bddbb'
 
 
 STEAM_API_KEY = '8C9877E691C84ED816FEF5D1B80A842B'
-RETURN_URL = 'http://localhost:5000/authorize'
+RETURN_URL = 'http://localhost:8080/authorize'
 
 
 @app.route('/')
