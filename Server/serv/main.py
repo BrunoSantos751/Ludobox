@@ -3,7 +3,7 @@ import sqlite3
 import requests
 import re
 from werkzeug.security import generate_password_hash, check_password_hash
-from comandos_dados import listar_usuarios_email, registrar_usuario,registrar_usuario_steam
+from comandos_dados import *
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -134,6 +134,48 @@ def get_games():
 
     except requests.exceptions.RequestException as e:
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/avaliacoes', methods=['POST'])
+def enviar_avaliacao():
+    data = request.json
+    user_id = data.get('user_id')
+    nota = data.get('nota')
+    comentario = data.get('comentario')
+    nome_jogo = data.get('nome_jogo')
+
+    if not all([user_id, nota, comentario, nome_jogo]):
+        return jsonify({'erro': 'Dados incompletos'}), 400
+
+    avaliacao_id = inserir_avaliacao(user_id, nota, comentario, nome_jogo)
+    return jsonify({'mensagem': 'Avaliação enviada com sucesso', 'avaliacao_id': avaliacao_id}), 201
+
+@app.route('/avaliacoes/like', methods=['POST'])
+def curtir():
+    data = request.json
+    avaliacao_id = data.get('avaliacao_id')
+
+    if not avaliacao_id:
+        return jsonify({'erro': 'avaliacao_id é obrigatório'}), 400
+
+    curtir_avaliacao(avaliacao_id)
+    return jsonify({'mensagem': f'Curtida adicionada à avaliação {avaliacao_id}'}), 200
+
+@app.route('/avaliacoes/dislike', methods=['POST'])
+def descurtir():
+    data = request.json
+    avaliacao_id = data.get('avaliacao_id')
+
+    if not avaliacao_id:
+        return jsonify({'erro': 'avaliacao_id é obrigatório'}), 400
+
+    descurtir_avaliacao(avaliacao_id)
+    return jsonify({'mensagem': f'Curtida removida da avaliação {avaliacao_id}'}), 200
+
+@app.route('/avaliacoes/top', methods=['GET'])
+def top_jogos():
+    top = listar_top_avaliacoes()
+    return jsonify(top), 200
+
 
 
 

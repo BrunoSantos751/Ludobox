@@ -140,15 +140,80 @@ def deletar_user_game(id_user_game):
 
 # ===================== Avaliacoes =====================
 
-def criar_review(user_id, game_id, titulo='', texto='', nota=None):
+def inserir_avaliacao(user_id, nota, comentario, nome_jogo):
     conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO reviews (user_id, game_id, titulo, texto, nota)
-        VALUES (?, ?, ?, ?, ?)
-    """, (user_id, game_id, titulo, texto, nota))
+    c = conn.cursor()
+    c.execute("""
+        INSERT INTO avaliacoes (user_id, nota, comentario, nome_jogo)
+        VALUES (?, ?, ?, ?)
+    """, (user_id, nota, comentario, nome_jogo))
+    conn.commit()
+    avaliacao_id = c.lastrowid
+    conn.close()
+    return avaliacao_id
+
+def curtir_avaliacao(avaliacao_id):
+    conn = conectar()
+    c = conn.cursor()
+
+    c.execute("""
+        UPDATE avaliacoes
+        SET likes = likes + 1
+        WHERE avaliacao_id = ?
+    """, (avaliacao_id,))
+
     conn.commit()
     conn.close()
+
+def descurtir_avaliacao(avaliacao_id):
+    conn = conectar()
+    c = conn.cursor()
+
+    c.execute("""
+        UPDATE avaliacoes
+        SET likes = likes - 1
+        WHERE avaliacao_id = ?
+    """, (avaliacao_id,))
+
+    conn.commit()
+    conn.close()
+
+
+def listar_top_avaliacoes(limit=10):
+    conn = conectar()
+    c = conn.cursor()
+    c.execute("""
+        SELECT 
+            a.nome_jogo, 
+            a.likes, 
+            a.avaliacao_id, 
+            a.user_id, 
+            a.nota, 
+            a.comentario, 
+            a.data_avaliacao,
+            u.nome AS user_nome,
+            u.avatar_url
+        FROM avaliacoes a
+        JOIN users u ON a.user_id = u.id
+        ORDER BY a.likes DESC
+        LIMIT ?
+    """, (limit,))
+    resultados = c.fetchall()
+    conn.close()
+    return [
+        {
+            'nome_jogo': nome_jogo,
+            'likes': likes,
+            'avaliacao_id': avaliacao_id,
+            'user_id': user_id,
+            'nota': nota,
+            'comentario': comentario,
+            'data_avaliacao': data_avaliacao,
+            'user_nome': user_nome,
+            'avatar_url': avatar_url,
+        }
+        for nome_jogo, likes, avaliacao_id, user_id, nota, comentario, data_avaliacao, user_nome, avatar_url in resultados
+    ]
 
 def listar_reviews():
     conn = conectar()
@@ -171,10 +236,10 @@ def atualizar_review(id_review, titulo=None, texto=None, nota=None):
     conn.commit()
     conn.close()
 
-def deletar_review(id_review):
+def deletar_review(avaliacao_id):
     conn = conectar()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM reviews WHERE id = ?", (id_review,))
+    cursor.execute("DELETE FROM avaliacoes WHERE avaliacao_id = ?", (avaliacao_id,))
     conn.commit()
     conn.close()
 
@@ -310,3 +375,7 @@ def review():
 
     conn.commit()
     conn.close()
+
+#curtir_avaliacao(1)
+#curtir_avaliacao(2)
+curtir_avaliacao(4)
