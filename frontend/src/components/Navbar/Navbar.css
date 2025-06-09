@@ -100,6 +100,9 @@
     background-color: #FA9021;
     padding: 15px;
     border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .login-button:hover{

@@ -82,6 +82,9 @@ function Register() {
   
   return (
     <div className="register-container">
+      <div className="home">
+        <a href="/">Voltar</a>
+      </div>
       <div className="logo-container">
         <img src="/logo-completo.png" alt="LUDOBOX" className="logo-completo" />
       </div>
