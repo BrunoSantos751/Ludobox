@@ -3,10 +3,10 @@ import Cards from '../Cards/Cards';
 import './Home.css';
 import Footer from '../Footer/Footer';
 
-export default function Home({ onEntrarClick }) {
+export default function Home() {
   return (
     <>
-      <Navbar onEntrarClick={onEntrarClick} />
+      <Navbar />
       <main>
         {/* Conteúdo da homepage */}
         <div className="melhorAvaliados">

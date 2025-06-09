@@ -3,7 +3,7 @@ import logo from "../../assets/images/logo-ludobox.png";
 import steam from "../../assets/images/steam-entrar.png";
 import './Navbar.css';
 
-export default function Navbar({ onEntrarClick }) {
+export default function Navbar() {
   const [click, setClick] = useState(false);
     
 
@@ -40,7 +40,7 @@ export default function Navbar({ onEntrarClick }) {
             </a>
           </li>
           <li className="nav-item" >
-            <button className="nav-links-mobile login-button" onClick={onEntrarClick}>Entrar</button>
+            <a href="/register" className="nav-links-mobile login-button">Entrar</a>
           </li>
         </ul>
         
