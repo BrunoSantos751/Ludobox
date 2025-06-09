@@ -1,40 +1,40 @@
 import { useEffect, useState } from 'react';
 import './Cards.css';
 
-export default function Cards(props){
+export default function Cards({ filtro }){
+    /* */
     const [jogos, setJogos] = useState([]);
+    
+    useEffect(() => {
+        let url = `http://127.0.0.1:8080/api/games`;
 
-useEffect(() => {
-  fetch(`http://127.0.0.1:8080/api/games`)
-    .then((response) => response.json())
-    .then(data => {
-      const jogosOrdenados = data.sort((a, b) => b.rating - a.rating);
-      setJogos(jogosOrdenados);
-      console.log(jogosOrdenados);
-    })
-    .catch(error => console.error('Não foi possível buscar os jogos', error));
-}, []);
+        if (filtro?.tipo === 'ordenar') {
+            url += `?ordering=${filtro.valor}`;
+        } else if (filtro?.tipo === 'genero') {
+            url += `?genres=${filtro.valor}`;
+        }
+
+        fetch(url)
+            .then((response) => response.json())
+            .then(response => setJogos(response))
+            .catch(error => console.error('Não foi possível buscar os jogos', error));
+        }, [filtro]);
 
 
     return(
-        <li>
+        <li className='li-card'>
             {jogos.map((jogo) =>(
-                <div className="card-Ma" key={jogo}>
+                <div className="card" key={jogo.id}>
                     <div className="jogo-poster">
-                        <img src={jogo.background_image} alt="" />
+                        <img src={jogo.background_image} alt={jogo.name} />
                     </div>
                     <div className="jogo-infos">
                         <p className="jogo-name">{jogo.name}</p>
                         <p className='jogo-nota'>
-                            <span class="material-symbols-outlined star">
-                                star
-                            </span>{jogo.rating}
+                            <span className="star">
+                                ⭐
+                            </span>{jogo.rating.toFixed(1)}
                         </p>
-
-                        <div className="hidden-content">
-                            <p className='description'></p>
-                            <button className="btn-default">Ver mais</button>
-                        </div>
                     </div>
                 </div>
                 
