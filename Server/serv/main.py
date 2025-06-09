@@ -97,13 +97,20 @@ def register():
 
 
 @app.route('/api/games', methods=['GET'])
+
 def get_games():
     query = request.args.get('search', '')  # parâmetro opcional: ?search=zelda
+    ordering = request.args.get('ordering', '')  # rating, name, released, etc
+    genres = request.args.get('genres', '')
 
-    rawg_url = f'https://api.rawg.io/api/games?key={RAWG_API_KEY}&page_size=10'
+    rawg_url = f'https://api.rawg.io/api/games?key={RAWG_API_KEY}&page_size=5'
 
     if query:
         rawg_url += f'&search={query}'
+    if ordering:
+        rawg_url += f'&ordering={ordering}'  # -rating (decrescente), name (crescente), etc
+    if genres:
+        rawg_url += f'&genres={genres}'  # IDs ou nomes
 
     try:
         response = requests.get(rawg_url)
@@ -115,9 +122,12 @@ def get_games():
                 'id': game['id'],
                 'name': game['name'],
                 'released': game.get('released'),
-                'background_image': game.get('background_image')
+                'background_image': game.get('background_image'),
+                'rating': game.get('rating'),
+                'metacritic': game.get('metacritic')
             }
             for game in data.get('results', [])
+            if game.get('rating') is not None
         ]
 
         return jsonify(games)

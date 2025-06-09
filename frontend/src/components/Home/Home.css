@@ -1,16 +1,33 @@
 main{
     display: flex;
+    flex-direction: column;
     justify-content: center;
+    align-items: center;
 }
 
-.melhorAvaliados{
+
+/* MELHOR AVALIADOS*/
+.melhorAvaliados {
+    max-width: 1100px;
+    padding: 2rem;
+    font-family: Arial, sans-serif;
     display: flex;
     flex-direction: column;
     gap: 30px;
+    width: 100%; /* Ocupa toda a largura disponível */
+    box-sizing: border-box; /* Evita que o padding aumente a largura total */
 }
 
-.melhorAvaliados h2{
-    color: #d8d8d8;
+.headermA {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.headermA h2 {
+  font-size: 1.8rem;
+  color: #d8d8d8;
 }
 
 .melhorAvaliados a{
@@ -24,4 +41,64 @@ main{
 
 .melhorAvaliados a:hover{
     background: #161616b7;
+}
+
+.cards-Ma {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* CATALOGO */
+.catalogo {
+    max-width: 1100px;
+    padding: 2rem;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    width: 100%; /* Ocupa toda a largura disponível */
+    box-sizing: border-box; /* Evita que o padding aumente a largura total */
+}
+
+.headerCat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.headerCat h2 {
+  font-size: 1.8rem;
+  color: #d8d8d8;
+}
+
+.catalogo a{
+    background: #1d1d1db7;
+    padding: 15px;
+    border-radius:10px ;
+    color: #eeeeee;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.catalogo a:hover{
+    background: #161616b7;
+}
+
+.cards-Cat {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+@media (max-width: 518px){
+    .headermA h2, .headerCat h2{
+        font-size: 1.5rem;
+    }
+
+    .melhorAvaliados a,.catalogo a{
+        text-align: center;
+        font-size: 1rem;
+    }
 }

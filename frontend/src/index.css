@@ -4,11 +4,19 @@
 }
 
 html, body {
-  height: 100%;
+  min-height: 100%;
   margin: 0;
+  padding: 0;
 }
 
+
 body{
+
+  background-repeat: no-repeat;
+  background-size: cover; /* cobre toda a área */
+  background-attachment: fixed; /* fixa o background durante scroll */
+  min-height: 100vh;
+  background-size: 100% 100%;
   background: linear-gradient(0deg, #321B01, #190E01 50%, #140B00, black );
   height: 100%;
   width: 100%;
