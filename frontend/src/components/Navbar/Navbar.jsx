@@ -40,7 +40,7 @@ export default function Navbar() {
             </a>
           </li>
           <li className="nav-item" >
-            <a href="/register" className="nav-links-mobile login-button">Entrar</a>
+            <a href="/login" className="nav-links-mobile login-button">Entrar</a>
           </li>
         </ul>
         

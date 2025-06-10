@@ -65,15 +65,21 @@ def authorize():
 
 @app.route('/login_email', methods=['POST'])
 def login_email():
-    email = request.form['email']
-    password = request.form['password']
-    user = listar_usuarios_email(email)
+    data = request.get_json()  
+    email = data.get('email')
+    password = data.get('password')
 
-    if user and check_password_hash(user[3], password):
-        session['email'] = email
-        return f"<h2>Bem-vindo, {user[1]}!</h2><p>Login com email bem-sucedido.</p><a href='/logout'>Logout</a>"
+    if not email or not password:
+        return jsonify({"message": "Email e senha são obrigatórios."}), 400
+
+    user = listar_usuarios_email(email) # type: ignore
+
+    if user and check_password_hash(user[3], password): # type: ignore
+        session['user_id'] = user[0] # type: ignore
+        session['user_name'] = user[1] # type: ignore
+        return jsonify({"message": "Login bem-sucedido!", "user": {"id": user[0], "nome": user[1]}}), 200 # type: ignore
     else:
-        return "<p>Email ou senha incorretos.</p>"
+        return jsonify({"message": "Email ou senha incorretos."}), 401
 
 @app.route('/register', methods=['POST'])
 def register():

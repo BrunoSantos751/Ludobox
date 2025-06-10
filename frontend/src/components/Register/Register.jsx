@@ -83,7 +83,7 @@ function Register() {
   return (
     <div className="register-container">
       <div className="home">
-        <a href="/">Voltar</a>
+        <a href="/">Início</a>
       </div>
       <div className="logo-container">
         <img src="/logo-completo.png" alt="LUDOBOX" className="logo-completo" />
@@ -139,7 +139,7 @@ function Register() {
       {serverMessage && <p className="server-message">{serverMessage}</p>}
       
       <p className="login-link">
-        Já tem uma conta: <a href="#">Clique aqui</a>
+        Já tem uma conta: <a href="/login">Clique aqui</a>
       </p>
     </div>
   );
