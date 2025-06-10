@@ -27,6 +27,28 @@ body {
   padding: 20px;
   max-width: 500px;
   margin: 0 auto;
+  position: relative;
+}
+
+.home a{
+  position: absolute;
+  right: 80%;
+    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: none;
+    border: none;
+    color: white;
+    background-color: #FA9021;
+    padding: 15px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.home a:hover {
+  background-color: #dd801c
 }
 
 .logo-container {
