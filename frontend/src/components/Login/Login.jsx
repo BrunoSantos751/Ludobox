@@ -1,5 +1,3 @@
-// Login.jsx
-
 import { useState } from 'react';
 import './Login.css';
 
@@ -10,8 +8,8 @@ function Login() {
   });
 
   const [errors, setErrors] = useState({});
-  const [serverMessage, setServerMessage] = useState(''); // Estado para mensagens do servidor
-  const [loading, setLoading] = useState(false); // Estado para indicar carregamento
+  const [serverMessage, setServerMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,11 +38,10 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    setServerMessage(''); // Limpa mensagens anteriores do servidor
+    setServerMessage('');
 
     if (validateForm()) {
-      setLoading(true); // Inicia o estado de carregamento
+      setLoading(true);
 
       try {
         const response = await fetch('http://localhost:8080/login_email', {
@@ -52,36 +49,34 @@ function Login() {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({
             email: formData.email,
-            password: formData.senha, // Enviando como 'password' para o backend
+            password: formData.senha,
           }),
         });
 
-        const data = await response.json(); // Pega a resposta JSON do servidor
+        const data = await response.json();
 
-        if (response.ok) { // Verifica se a resposta foi bem-sucedida (status 2xx)
-          setServerMessage(data.message);
-          // Redirecionar para a dashboard ou página inicial após o login
-          window.location.href = '/'; // Redireciona para a página inicial
-          console.log('Login bem-sucedido:', data.user);
-          setFormData({ email: '', senha: '' }); // Limpa o formulário
-          setErrors({}); // Limpa erros de validação
+        if (response.ok) {
+          setFormData({ email: '', senha: '' });
+          setErrors({});
+          window.location.href = "/";
         } else {
-          setServerMessage(data.message); // Exibe a mensagem de erro do backend
+          setServerMessage(data.message);
         }
       } catch (error) {
         console.error('Erro na requisição:', error);
         setServerMessage('Erro ao conectar com o servidor. Tente novamente mais tarde.');
       } finally {
-        setLoading(false); // Finaliza o estado de carregamento
+        setLoading(false);
       }
     }
   };
 
   return (
     <div className="login-container">
-       <div className="home">
+      <div className="home">
         <a href="/">Voltar</a>
       </div>
       <div className="logo-container">
@@ -99,7 +94,7 @@ function Login() {
             onChange={handleChange}
             placeholder="Endereço de e-mail"
             className={errors.email ? 'input-error' : ''}
-            disabled={loading} // Desabilita input durante o carregamento
+            disabled={loading}
           />
           {errors.email && <span className="error-message">{errors.email}</span>}
         </div>
@@ -112,17 +107,17 @@ function Login() {
             onChange={handleChange}
             placeholder="Senha"
             className={errors.senha ? 'input-error' : ''}
-            disabled={loading} // Desabilita input durante o carregamento
+            disabled={loading}
           />
           {errors.senha && <span className="error-message">{errors.senha}</span>}
         </div>
 
         <button type="submit" className="login-button" disabled={loading}>
-          {loading ? 'Entrando...' : 'Entrar'} {/* Altera texto do botão */}
+          {loading ? 'Entrando...' : 'Entrar'}
         </button>
       </form>
 
-      {serverMessage && <p className="server-message">{serverMessage}</p>} {/* Exibe mensagens do servidor */}
+      {serverMessage && <p className="server-message">{serverMessage}</p>}
 
       <p className="forgot-password">
         <a href="#">Esqueceu sua senha?</a>
