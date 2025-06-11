@@ -153,7 +153,6 @@ const [totalPaginas, setTotalPaginas] = useState(1);
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }
