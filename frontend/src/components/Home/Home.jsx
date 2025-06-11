@@ -19,7 +19,8 @@ export default function Home() {
           -rating → melhor avaliação primeiro
           released → data de lançamento
           Para gêneros, você precisa passar o ID ou slug (por exemplo, action, shooter)*/}
-            <Cards filtro={{ tipo: "ordenar", valor: "-rating" }} />
+            <Cards filtro={{ ordenar: '-rating' }} limite={5} />
+
             {/*
             <Cards filtro={{ tipo: "ordenar", valor: "name" }} />     A-Z
             <Cards filtro={{ tipo: "genero", valor: "action,shooter" }} />  gêneros
@@ -39,7 +40,7 @@ export default function Home() {
           -rating → melhor avaliação primeiro
           released → data de lançamento
           Para gêneros, você precisa passar o ID ou slug (por exemplo, action, shooter)*/}
-            <Cards filtro={{ tipo: "ordenar", valor: "" }} />
+            <Cards filtro={{ tipo: "ordenar", valor: "" }} limite={5} />
             {/*
             <Cards filtro={{ tipo: "ordenar", valor: "name" }} />     A-Z
             <Cards filtro={{ tipo: "genero", valor: "action,shooter" }} />  gêneros

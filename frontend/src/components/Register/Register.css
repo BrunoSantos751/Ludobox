@@ -83,7 +83,7 @@ body {
   width: 100%;
 }
 
-input {
+.form-group input {
   width: 100%;
   padding: 15px;
   border: none;
@@ -93,11 +93,11 @@ input {
   font-size: 1.1rem;
 }
 
-input::placeholder {
+.form-group input::placeholder {
   color: #888;
 }
 
-input:focus {
+.form-group input:focus {
   outline: 1px solid var(--primary-color);
 }
 

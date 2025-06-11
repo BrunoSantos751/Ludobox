@@ -82,7 +82,7 @@ body {
   width: 100%;
 }
 
-input {
+.login-container input {
   width: 100%;
   padding: 15px;
   border: none;
@@ -92,11 +92,11 @@ input {
   font-size: 1.1rem;
 }
 
-input::placeholder {
+.login-container input::placeholder {
   color: #888;
 }
 
-input:focus {
+.login-container input:focus {
   outline: 1px solid var(--primary-color);
 }
 
