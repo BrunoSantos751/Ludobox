@@ -85,65 +85,44 @@ def deletar_usuario(id_usuario):
     conn.commit()
     conn.close()
 
-# ===================== GAMES =====================
-
-def criar_jogo(nome, descricao='', genero='', plataforma='', desenvolvedor='', imagem_url='', lancamento=''):
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO games (nome, descricao, genero, plataforma, desenvolvedor, imagem_url, lancamento)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (nome, descricao, genero, plataforma, desenvolvedor, imagem_url, lancamento))
-    conn.commit()
-    conn.close()
-
-def listar_jogos():
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, nome, genero, plataforma FROM games")
-    jogos = cursor.fetchall()
-    conn.close()
-    return jogos
 
 # ===================== USER_GAMES =====================
 
-def criar_user_game(user_id, game_id, status, nota=None, comentario=None):
+def registrar_jogo(user_id, nome_jogo, status):
     conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO user_games (user_id, game_id, status, nota, comentario)
-        VALUES (?, ?, ?, ?, ?)
-    """, (user_id, game_id, status, nota, comentario))
-    conn.commit()
-    conn.close()
+    c = conn.cursor()
+    
+    try:
+        c.execute("INSERT INTO user_games (user_id, nome_jogo, status) VALUES (?, ?, ?)",
+                  (user_id, nome_jogo, status))
+        conn.commit()
+        return True
+    except sqlite3.Error:
+        return False
 
-def listar_user_games():
+def alterar_status_jogo(user_id, nome_jogo, novo_status):
     conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, user_id, game_id, status, nota, comentario FROM user_games")
-    user_games = cursor.fetchall()
-    conn.close()
-    return user_games
+    c = conn.cursor()
 
-def atualizar_user_game(id_user_game, status=None, nota=None, comentario=None):
-    conn = conectar()
-    cursor = conn.cursor()
-    campos = []
-    valores = []
-    if status: campos.append("status = ?"); valores.append(status)
-    if nota is not None: campos.append("nota = ?"); valores.append(nota)
-    if comentario is not None: campos.append("comentario = ?"); valores.append(comentario)
-    valores.append(id_user_game)
-    cursor.execute(f"UPDATE user_games SET {', '.join(campos)} WHERE id = ?", valores)
-    conn.commit()
-    conn.close()
+    try:
+        c.execute("UPDATE user_games SET status = ? WHERE user_id = ? AND nome_jogo = ?",
+                  (novo_status, user_id, nome_jogo))
+        conn.commit()
+        return c.rowcount > 0
+    except sqlite3.Error:
+        return False
 
-def deletar_user_game(id_user_game):
+def listar_jogos_do_usuario(user_id):
     conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM user_games WHERE id = ?", (id_user_game,))
-    conn.commit()
-    conn.close()
+    c = conn.cursor()
+
+    try:
+        c.execute("SELECT nome_jogo, status FROM user_games WHERE user_id = ?",
+                  (user_id,))
+        jogos = c.fetchall()
+        return jogos
+    except sqlite3.Error:
+        return []
 
 # ===================== Avaliacoes =====================
 
@@ -277,71 +256,6 @@ def deletar_follow(id_follow):
     conn.commit()
     conn.close()
 
-# ===================== LISTS =====================
-
-def criar_lista(user_id, nome, descricao=''):
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO lists (user_id, nome, descricao)
-        VALUES (?, ?, ?)
-    """, (user_id, nome, descricao))
-    conn.commit()
-    conn.close()
-
-def listar_listas():
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, user_id, nome, descricao FROM lists")
-    listas = cursor.fetchall()
-    conn.close()
-    return listas
-
-def atualizar_lista(id_lista, nome=None, descricao=None):
-    conn = conectar()
-    cursor = conn.cursor()
-    campos = []
-    valores = []
-    if nome is not None: campos.append("nome = ?"); valores.append(nome)
-    if descricao is not None: campos.append("descricao = ?"); valores.append(descricao)
-    valores.append(id_lista)
-    cursor.execute(f"UPDATE lists SET {', '.join(campos)} WHERE id = ?", valores)
-    conn.commit()
-    conn.close()
-
-def deletar_lista(id_lista):
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM lists WHERE id = ?", (id_lista,))
-    conn.commit()
-    conn.close()
-
-# ===================== LIST_GAMES =====================
-
-def adicionar_jogo_na_lista(list_id, game_id):
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO list_games (list_id, game_id)
-        VALUES (?, ?)
-    """, (list_id, game_id))
-    conn.commit()
-    conn.close()
-
-def listar_jogos_da_lista():
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, list_id, game_id FROM list_games")
-    jogos = cursor.fetchall()
-    conn.close()
-    return jogos
-
-def deletar_jogo_da_lista(id_list_game):
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM list_games WHERE id = ?", (id_list_game,))
-    conn.commit()
-    conn.close()
 
 
 
@@ -385,4 +299,21 @@ def review():
 
 #curtir_avaliacao(1)
 #curtir_avaliacao(2)
-curtir_avaliacao(4)
+#curtir_avaliacao(4)
+
+
+def user_games():
+    conn = conectar()
+    c = conn.cursor()
+
+    c.execute(""" 
+        CREATE TABLE IF NOT EXISTS user_games (
+            user_game_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INT,
+            nome_jogo TEXT,
+            status TEXT,
+            FOREIGN KEY (user_id) REFERENCES usuarios(user_id)
+        )
+    """)
+
+user_games()
