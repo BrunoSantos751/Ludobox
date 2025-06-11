@@ -1,9 +1,9 @@
 from flask import Flask, redirect, request, session, url_for, render_template, jsonify
-import sqlite3
+# import sqlite3  <-- REMOVER ESTA LINHA
 import requests
 import re
 from werkzeug.security import generate_password_hash, check_password_hash
-from comandos_dados import *
+from comandos_dados import * # Importa todas as funções de interação com o DB
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -11,11 +11,9 @@ CORS(app, supports_credentials=True, origins=['http://localhost:5173'])
 app.secret_key = 'Ludobox'
 RAWG_API_KEY = '7221b0332ccb4921ad5eb4f3da1bddbb'
 
-
 STEAM_API_KEY = '8C9877E691C84ED816FEF5D1B80A842B'
 RETURN_URL = 'http://localhost:8080/authorize'
-FRONTEND_URL = 'http://localhost:5173' # Assuming your React app runs on port 5173
-
+FRONTEND_URL = 'http://localhost:5173'
 
 @app.route('/')
 def index():
@@ -44,17 +42,17 @@ def authorize():
     if steam_id_match:
         steam_id = steam_id_match.group(1)
         session['steam_id'] = steam_id
-        # Recuperar ou registrar o usuário Steam no seu banco de dados
-        # e então armazenar o ID do usuário interno na sessão
         player_profile_url = f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={STEAM_API_KEY}&steamids={steam_id}"
         player_response = requests.get(player_profile_url)
         player_data = player_response.json()['response']['players'][0]
         
+        # Estas funções já interagem com o PostgreSQL via db.py
         registrar_usuario_steam(player_data['personaname'],steam_id)
-        # Assumindo que registrar_usuario_steam retorna o ID do usuário interno ou que você pode buscá-lo
-        user_id = buscar_id_usuario_steam(steam_id) # Você precisará implementar essa função em comandos_dados.py
+        user_id = buscar_id_usuario_steam(steam_id)
         if user_id:
-            session['user_id'] = user_id
+            # user_id vindo do banco de dados (provavelmente um dicionário)
+            # user_id['id'] é o correto se estiver usando RealDictCursor
+            session['user_id'] = user_id['id'] 
             session['user_name'] = player_data['personaname']
             session['logged_in_via'] = 'steam'
     else:
@@ -62,29 +60,30 @@ def authorize():
     
     return redirect(FRONTEND_URL)
 
-
 @app.route('/login_email', methods=['POST'])
 def login_email():
-    data = request.get_json()  
+    data = request.get_json()
     email = data.get('email')
     password = data.get('password')
 
     if not email or not password:
         return jsonify({"message": "Email e senha são obrigatórios."}), 400
 
-    user = listar_usuarios_email(email) 
+  
+    user = listar_usuarios_email(email)
 
-    if user and check_password_hash(user[3], password): 
-        session['user_id'] = user[0] 
-        session['user_name'] = user[1]
+
+    if user and check_password_hash(user['senha'], password):
+        session['user_id'] = user['id'] # user[0] era o ID
+        session['user_name'] = user['nome'] # user[1] era o nome
         session['logged_in_via'] = 'email'
-        return jsonify({"message": "Login bem-sucedido!", "user": {"id": user[0], "nome": user[1]}}), 200 
+        return jsonify({"message": "Login bem-sucedido!", "user": {"id": user['id'], "nome": user['nome']}}), 200
     else:
         return jsonify({"message": "Email ou senha incorretos."}), 401
 
 @app.route('/register', methods=['POST'])
 def register():
-    data = request.get_json()  # Pega o JSON enviado
+    data = request.get_json()
     
     nome = data.get('nome')
     email = data.get('email')
@@ -94,15 +93,20 @@ def register():
         return jsonify({"message": "Dados incompletos."}), 400
     
     hashed_password = generate_password_hash(password)
+    
+  
+    existing_user = listar_usuarios_email(email)
+    if existing_user:
+        return jsonify({"message": "Email já cadastrado."}), 400
+
+  
     success = registrar_usuario(nome, email, hashed_password)
     
     if success:
-        return jsonify({"message": "Usuário registrado com sucesso!"})
+        return jsonify({"message": "Usuário registrado com sucesso!"}), 201
     else:
-        return jsonify({"message": "Email já cadastrado."}), 400
+        return jsonify({"message": "Erro ao registrar usuário."}), 500
     
-
-# Novo endpoint para verificar o status de login
 @app.route('/api/auth_status', methods=['GET'])
 def auth_status():
     if 'user_id' in session:
@@ -113,14 +117,13 @@ def auth_status():
         })
     return jsonify({'logged_in': False})
 
-
 @app.route('/api/games', methods=['GET'])
 def get_games():
     query = request.args.get('search', '')
     ordering = request.args.get('ordering', '')
     genres = request.args.get('genres', '')
-    page_size = int(request.args.get('page_size', 12))  # padrão: 12
-    page = int(request.args.get('page', 1))             # padrão: 1
+    page_size = int(request.args.get('page_size', 12))
+    page = int(request.args.get('page', 1))
 
     rawg_url = f'https://api.rawg.io/api/games?key={RAWG_API_KEY}&page_size={page_size}&page={page}'
 
@@ -168,6 +171,7 @@ def enviar_avaliacao():
     if not all([user_id, nota, comentario, nome_jogo]):
         return jsonify({'erro': 'Dados incompletos'}), 400
 
+  
     avaliacao_id = inserir_avaliacao(user_id, nota, comentario, nome_jogo)
     return jsonify({'mensagem': 'Avaliação enviada com sucesso', 'avaliacao_id': avaliacao_id}), 201
 
@@ -179,6 +183,7 @@ def curtir():
     if not avaliacao_id:
         return jsonify({'erro': 'avaliacao_id é obrigatório'}), 400
 
+  
     curtir_avaliacao(avaliacao_id)
     return jsonify({'mensagem': f'Curtida adicionada à avaliação {avaliacao_id}'}), 200
 
@@ -190,16 +195,15 @@ def descurtir():
     if not avaliacao_id:
         return jsonify({'erro': 'avaliacao_id é obrigatório'}), 400
 
+  
     descurtir_avaliacao(avaliacao_id)
     return jsonify({'mensagem': f'Curtida removida da avaliação {avaliacao_id}'}), 200
 
 @app.route('/avaliacoes/top', methods=['GET'])
 def top_jogos():
+  
     top = listar_top_avaliacoes()
     return jsonify(top), 200
-
-
-
 
 @app.route('/logout')
 def logout():
@@ -208,4 +212,3 @@ def logout():
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
-
