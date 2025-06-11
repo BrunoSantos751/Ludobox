@@ -29,7 +29,7 @@ const [totalPaginas, setTotalPaginas] = useState(1);
   const generos = [
     { id: 'action', nome: 'Ação' },
     { id: 'adventure', nome: 'Aventura' },
-    { id: 'rpg', nome: 'RPG' },
+    { id: 'role-playing-games-rpg', nome: 'RPG' },
     { id: 'sports', nome: 'Esportes' },
     { id: 'indie', nome: 'Indie' },
     { id: 'strategy', nome: 'Estratégia' },
