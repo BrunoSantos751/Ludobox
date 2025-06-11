@@ -1,13 +1,11 @@
-
-
 .li-card {
   display: flex;
   flex-direction: row;
   gap: 20px;
-  overflow-x: auto;
   padding: 0;
   margin: 0;
   list-style: none;
+  flex-wrap: wrap;
 }
 
 .card {
