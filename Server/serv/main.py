@@ -103,20 +103,21 @@ def register():
 
 
 @app.route('/api/games', methods=['GET'])
-
 def get_games():
-    query = request.args.get('search', '')  # parâmetro opcional: ?search=zelda
-    ordering = request.args.get('ordering', '')  # rating, name, released, etc
-    genres = request.args.get('genres', '')
+    query = request.args.get('search', '')  # ?search=zelda
+    ordering = request.args.get('ordering', '')  # ?ordering=-rating
+    genres = request.args.get('genres', '')  # ?genres=action
+    page = request.args.get('page', '1')  # ?page=2
+    page_size = request.args.get('page_size', '5')  # ?page_size=12
 
-    rawg_url = f'https://api.rawg.io/api/games?key={RAWG_API_KEY}&page_size=5'
+    rawg_url = f'https://api.rawg.io/api/games?key={RAWG_API_KEY}&page_size={page_size}&page={page}'
 
     if query:
         rawg_url += f'&search={query}'
     if ordering:
-        rawg_url += f'&ordering={ordering}'  # -rating (decrescente), name (crescente), etc
+        rawg_url += f'&ordering={ordering}'
     if genres:
-        rawg_url += f'&genres={genres}'  # IDs ou nomes
+        rawg_url += f'&genres={genres}'
 
     try:
         response = requests.get(rawg_url)
@@ -136,7 +137,12 @@ def get_games():
             if game.get('rating') is not None
         ]
 
-        return jsonify(games)
+        return jsonify({
+            'results': games,
+            'next': data.get('next'),
+            'previous': data.get('previous'),
+            'count': data.get('count')
+        })
 
     except requests.exceptions.RequestException as e:
         return jsonify({'error': str(e)}), 500
