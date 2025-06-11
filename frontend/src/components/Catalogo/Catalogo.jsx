@@ -74,7 +74,6 @@ const [totalPaginas, setTotalPaginas] = useState(1);
 
   return (
     <div className='pagina'>
-      <Navbar />
       <div className="pagina-cat">
         <div className="catalogo-header">
           <h2>Todos os nossos jogos</h2>
@@ -154,7 +153,6 @@ const [totalPaginas, setTotalPaginas] = useState(1);
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

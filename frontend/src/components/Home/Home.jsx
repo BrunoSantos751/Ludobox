@@ -49,7 +49,7 @@ export default function Home() {
         </div>
         
         <div className='footer'>
-              <Footer />
+              
         </div>
       </main>
     </>
