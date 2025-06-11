@@ -119,19 +119,11 @@ def auth_status():
 
 @app.route('/api/games', methods=['GET'])
 def get_games():
-<<<<<<< HEAD
-    query = request.args.get('search', '')
-    ordering = request.args.get('ordering', '')
-    genres = request.args.get('genres', '')
-    page_size = int(request.args.get('page_size', 12))
-    page = int(request.args.get('page', 1))
-=======
     query = request.args.get('search', '')  # ?search=zelda
     ordering = request.args.get('ordering', '')  # ?ordering=-rating
     genres = request.args.get('genres', '')  # ?genres=action
     page = request.args.get('page', '1')  # ?page=2
     page_size = request.args.get('page_size', '5')  # ?page_size=12
->>>>>>> main
 
     rawg_url = f'https://api.rawg.io/api/games?key={RAWG_API_KEY}&page_size={page_size}&page={page}'
 
@@ -221,15 +213,4 @@ def logout():
     return jsonify({'message': 'Logout efetuado com sucesso.'})
 
 if __name__ == '__main__':
-<<<<<<< HEAD
     app.run(debug=True, port=8080)
-=======
-    app.run(debug=True, port=8080)
-
-
-
-
-
-
-    
->>>>>>> main
