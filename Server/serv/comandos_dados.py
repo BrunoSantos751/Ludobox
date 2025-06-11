@@ -38,6 +38,13 @@ def registrar_usuario_steam(nome,steam_id):
     conn.commit()
     conn.close()
 
+def buscar_id_usuario_steam(steam_id):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM users WHERE steam_id = ?", (steam_id,))
+    user = cursor.fetchone()
+    return user 
+
 def listar_usuarios_email(email):
     conn = conectar()
     cursor = conn.cursor()
