@@ -1,5 +1,4 @@
 from flask import Flask, redirect, request, session, url_for, render_template, jsonify
-# import sqlite3  <-- REMOVER ESTA LINHA
 import requests
 import re
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -46,7 +45,7 @@ def authorize():
         player_response = requests.get(player_profile_url)
         player_data = player_response.json()['response']['players'][0]
         
-        # Estas funções já interagem com o PostgreSQL via db.py
+        
         registrar_usuario_steam(player_data['personaname'],steam_id)
         user_id = buscar_id_usuario_steam(steam_id)
         if user_id:
@@ -214,10 +213,3 @@ def logout():
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
-
-
-
-
-
-
-    

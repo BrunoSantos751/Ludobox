@@ -1,248 +1,174 @@
-import sqlite3
+from db import get_connection
 from datetime import datetime
-
-# Caminho para o banco de dados
-DB_PATH = 'catalogo_jogos.db'
-
-# Conectar ao banco
-def conectar():
-    return sqlite3.connect(DB_PATH)
 
 # ===================== USERS =====================
 
 def criar_usuario(nome, email, senha, bio='', avatar_url=''):
-    conn = conectar()
+    conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO users (nome, email, senha, bio, avatar_url)
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s)
     """, (nome, email, senha, bio, avatar_url))
     conn.commit()
     conn.close()
 
-def registrar_usuario(nome,email, senha):
-        conn=conectar()
-        c = conn.cursor()
-        c.execute("INSERT INTO users (nome,email, senha) VALUES (?,?, ?)", (nome,email, senha))
-        conn.commit()
-        return True
+def registrar_usuario(nome, email, senha):
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute("INSERT INTO users (nome, email, senha) VALUES (%s, %s, %s)", (nome, email, senha))
+    conn.commit()
+    conn.close()
+    return True
 
-
-def registrar_usuario_steam(nome,steam_id):
-    conn = conectar()
+def registrar_usuario_steam(nome, steam_id):
+    conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT or IGNORE INTO users (nome,steam_id)
-        VALUES (?,?)
-    """, (nome,steam_id))
+        INSERT INTO users (nome, steam_id)
+        VALUES (%s, %s)
+        ON CONFLICT (steam_id) DO NOTHING
+    """, (nome, steam_id))
     conn.commit()
     conn.close()
 
 def buscar_id_usuario_steam(steam_id):
-    conn = conectar()
+    conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id FROM users WHERE steam_id = ?", (steam_id,))
+    cursor.execute("SELECT id FROM users WHERE steam_id = %s", (steam_id,))
     user = cursor.fetchone()
-    return user 
+    conn.close()
+    return user
 
 def listar_usuarios_email(email):
-    conn = conectar()
+    conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+    cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
     emailReturn = cursor.fetchone()
     conn.close()
     return emailReturn
 
 def listar_usuarios_nome(nome):
-    conn = conectar()
+    conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE nome = ?", (nome,))
+    cursor.execute("SELECT * FROM users WHERE nome = %s", (nome,))
     emailReturn = cursor.fetchone()
     conn.close()
     return emailReturn
 
-#print(listar_usuarios_nome('lilofox'))
-
 def atualizar_usuario(id_usuario, nome=None, email=None, senha=None, bio=None, avatar_url=None):
-    conn = conectar()
+    conn = get_connection()
     cursor = conn.cursor()
     campos = []
     valores = []
-    if nome: campos.append("nome = ?"); valores.append(nome)
-    if email: campos.append("email = ?"); valores.append(email)
-    if senha: campos.append("senha = ?"); valores.append(senha)
-    if bio is not None: campos.append("bio = ?"); valores.append(bio)
-    if avatar_url is not None: campos.append("avatar_url = ?"); valores.append(avatar_url)
+    if nome: campos.append("nome = %s"); valores.append(nome)
+    if email: campos.append("email = %s"); valores.append(email)
+    if senha: campos.append("senha = %s"); valores.append(senha)
+    if bio is not None: campos.append("bio = %s"); valores.append(bio)
+    if avatar_url is not None: campos.append("avatar_url = %s"); valores.append(avatar_url)
     valores.append(id_usuario)
-    cursor.execute(f"UPDATE users SET {', '.join(campos)} WHERE id = ?", valores)
+    cursor.execute(f"UPDATE users SET {', '.join(campos)} WHERE id = %s", valores)
     conn.commit()
     conn.close()
 
 def deletar_usuario(id_usuario):
-    conn = conectar()
+    conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM users WHERE id = ?", (id_usuario,))
+    cursor.execute("DELETE FROM users WHERE id = %s", (id_usuario,))
     conn.commit()
     conn.close()
-
 
 # ===================== USER_GAMES =====================
 
 def registrar_jogo(user_id, nome_jogo, status):
-    conn = conectar()
+    conn = get_connection()
     c = conn.cursor()
-    
     try:
-        c.execute("INSERT INTO user_games (user_id, nome_jogo, status) VALUES (?, ?, ?)",
+        c.execute("INSERT INTO user_games (user_id, nome_jogo, status) VALUES (%s, %s, %s)",
                   (user_id, nome_jogo, status))
         conn.commit()
         return True
-    except sqlite3.Error:
+    except:
         return False
 
 def alterar_status_jogo(user_id, nome_jogo, novo_status):
-    conn = conectar()
+    conn = get_connection()
     c = conn.cursor()
-
     try:
-        c.execute("UPDATE user_games SET status = ? WHERE user_id = ? AND nome_jogo = ?",
+        c.execute("UPDATE user_games SET status = %s WHERE user_id = %s AND nome_jogo = %s",
                   (novo_status, user_id, nome_jogo))
         conn.commit()
         return c.rowcount > 0
-    except sqlite3.Error:
+    except:
         return False
 
 def listar_jogos_do_usuario(user_id):
-    conn = conectar()
+    conn = get_connection()
     c = conn.cursor()
-
     try:
-        c.execute("SELECT nome_jogo, status FROM user_games WHERE user_id = ?",
-                  (user_id,))
+        c.execute("SELECT nome_jogo, status FROM user_games WHERE user_id = %s", (user_id,))
         jogos = c.fetchall()
         return jogos
-    except sqlite3.Error:
+    except:
         return []
 
 # ===================== Avaliacoes =====================
 
 def inserir_avaliacao(user_id, nota, comentario, nome_jogo):
-    conn = conectar()
+    conn = get_connection()
     c = conn.cursor()
     c.execute("""
         INSERT INTO avaliacoes (user_id, nota, comentario, nome_jogo)
-        VALUES (?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s)
     """, (user_id, nota, comentario, nome_jogo))
     conn.commit()
-    avaliacao_id = c.lastrowid
+    c.execute("SELECT LASTVAL()")
+    avaliacao_id = c.fetchone()['lastval']
     conn.close()
     return avaliacao_id
 
 def curtir_avaliacao(avaliacao_id):
-    conn = conectar()
+    conn = get_connection()
     c = conn.cursor()
-
-    c.execute("""
-        UPDATE avaliacoes
-        SET likes = likes + 1
-        WHERE avaliacao_id = ?
-    """, (avaliacao_id,))
-
+    c.execute("UPDATE avaliacoes SET likes = likes + 1 WHERE avaliacao_id = %s", (avaliacao_id,))
     conn.commit()
     conn.close()
 
 def descurtir_avaliacao(avaliacao_id):
-    conn = conectar()
+    conn = get_connection()
     c = conn.cursor()
-
-    c.execute("""
-        UPDATE avaliacoes
-        SET likes = likes - 1
-        WHERE avaliacao_id = ?
-    """, (avaliacao_id,))
-
+    c.execute("UPDATE avaliacoes SET likes = likes - 1 WHERE avaliacao_id = %s", (avaliacao_id,))
     conn.commit()
     conn.close()
 
-
 def listar_top_avaliacoes(limit=10):
-    conn = conectar()
+    conn = get_connection()
     c = conn.cursor()
     c.execute("""
         SELECT 
-            a.nome_jogo, 
-            a.likes, 
-            a.avaliacao_id, 
-            a.user_id, 
-            a.nota, 
-            a.comentario, 
-            a.data_avaliacao,
-            u.nome AS user_nome,
-            u.avatar_url
+            a.nome_jogo, a.likes, a.avaliacao_id, a.user_id, 
+            a.nota, a.comentario, a.data_avaliacao,
+            u.nome AS user_nome, u.avatar_url
         FROM avaliacoes a
         JOIN users u ON a.user_id = u.id
         ORDER BY a.likes DESC
-        LIMIT ?
+        LIMIT %s
     """, (limit,))
     resultados = c.fetchall()
     conn.close()
-    return [
-        {
-            'nome_jogo': nome_jogo,
-            'likes': likes,
-            'avaliacao_id': avaliacao_id,
-            'user_id': user_id,
-            'nota': nota,
-            'comentario': comentario,
-            'data_avaliacao': data_avaliacao,
-            'user_nome': user_nome,
-            'avatar_url': avatar_url,
-        }
-        for nome_jogo, likes, avaliacao_id, user_id, nota, comentario, data_avaliacao, user_nome, avatar_url in resultados
-    ]
+    return resultados
 
-def listar_reviews():
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, user_id, game_id, titulo, texto, nota FROM reviews")
-    reviews = cursor.fetchall()
-    conn.close()
-    return reviews
-
-def atualizar_review(id_review, titulo=None, texto=None, nota=None):
-    conn = conectar()
-    cursor = conn.cursor()
-    campos = []
-    valores = []
-    if titulo is not None: campos.append("titulo = ?"); valores.append(titulo)
-    if texto is not None: campos.append("texto = ?"); valores.append(texto)
-    if nota is not None: campos.append("nota = ?"); valores.append(nota)
-    valores.append(id_review)
-    cursor.execute(f"UPDATE reviews SET {', '.join(campos)} WHERE id = ?", valores)
-    conn.commit()
-    conn.close()
-
-def deletar_review(avaliacao_id):
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM avaliacoes WHERE avaliacao_id = ?", (avaliacao_id,))
-    conn.commit()
-    conn.close()
-
-# ===================== FOLLOWS =====================
+# ===================== Follows =====================
 
 def criar_follow(seguidor_id, seguindo_id):
-    conn = conectar()
+    conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO follows (seguidor_id, seguindo_id)
-        VALUES (?, ?)
-    """, (seguidor_id, seguindo_id))
+    cursor.execute("INSERT INTO follows (seguidor_id, seguindo_id) VALUES (%s, %s)", (seguidor_id, seguindo_id))
     conn.commit()
     conn.close()
 
 def listar_follows():
-    conn = conectar()
+    conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT id, seguidor_id, seguindo_id FROM follows")
     follows = cursor.fetchall()
@@ -250,70 +176,8 @@ def listar_follows():
     return follows
 
 def deletar_follow(id_follow):
-    conn = conectar()
+    conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM follows WHERE id = ?", (id_follow,))
+    cursor.execute("DELETE FROM follows WHERE id = %s", (id_follow,))
     conn.commit()
     conn.close()
-
-
-
-
-#comandos para criar as tables
-def init_db():
-        conn = conectar()
-        c = conn.cursor()
-        #c.execute("DROP TABLE users")
-        c.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                nome TEXT,
-                email TEXT UNIQUE,
-                senha TEXT,
-                avatar_url TEXT,
-                created_at TEXT DEFAULT (date('now')),
-                steam_id TEXT UNIQUE
-            )
-        """)
-        conn.commit()
-
-def review():
-    conn = conectar()
-    c = conn.cursor()
-
-    c.execute(""" 
-        CREATE TABLE IF NOT EXISTS avaliacoes (
-            avaliacao_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INT,
-            nota INT,
-            comentario TEXT,
-            nome_jogo TEXT,
-            likes INTEGER DEFAULT 0,
-            data_avaliacao TEXT DEFAULT (datetime('now')),
-            FOREIGN KEY (user_id) REFERENCES usuarios(user_id)
-        )
-    """)
-
-    conn.commit()
-    conn.close()
-
-#curtir_avaliacao(1)
-#curtir_avaliacao(2)
-#curtir_avaliacao(4)
-
-
-def user_games():
-    conn = conectar()
-    c = conn.cursor()
-
-    c.execute(""" 
-        CREATE TABLE IF NOT EXISTS user_games (
-            user_game_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INT,
-            nome_jogo TEXT,
-            status TEXT,
-            FOREIGN KEY (user_id) REFERENCES usuarios(user_id)
-        )
-    """)
-
-user_games()
