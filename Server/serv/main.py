@@ -5,8 +5,9 @@ from urllib.parse import quote as encodeURIComponent
 from werkzeug.security import generate_password_hash, check_password_hash
 from comandos_dados import * # Importa todas as funções de interação com o DB
 from flask_cors import CORS
-from datetime import timedelta # Importar timedelta
+from datetime import timedelta, datetime, timezone
 from urllib.parse import unquote
+import jwt
 
 
 
@@ -32,82 +33,72 @@ FRONTEND_URL = 'https://trabalho-engenharia-de-software-phi.vercel.app/'
 def index():
     return redirect(FRONTEND_URL)
 
-@app.route('/login')
-def login():
-    steam_openid_url = (
-        "https://steamcommunity.com/openid/login"
-        "?openid.ns=http://specs.openid.net/auth/2.0"
-        "&openid.mode=checkid_setup"
-        f"&openid.return_to={RETURN_URL}"
-        "&openid.realm=https://ludobox.onrender.com/"
-        "&openid.identity=http://specs.openid.net/auth/2.0/identifier_select"
-        "&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select"
-    )
-    print(f"Redirecionando para Steam OpenID: {steam_openid_url}") # Debugging
-    return redirect(steam_openid_url)
+
 
 @app.route('/authorize')
 def authorize():
-    print("Iniciando rota /authorize...") # Debugging
-    openid_url = request.args.get('openid.claimed_id')
-    if not openid_url:
-        print("Erro: URL inválida (openid.claimed_id não encontrado).") # Debugging
-        return 'Erro: URL inválida.'
+    if request.args.get('openid.mode') == 'id_res':
+        # Reconstruir a URL de verificação
+        params = dict(request.args)
+        params['openid.mode'] = 'check_authentication'
+        if 'openid.response_nonce' in params:
+            del params['openid.response_nonce']
 
-    steam_id_match = re.search(r'/openid/id/(\d+)', openid_url)
-    if steam_id_match:
-        steam_id = steam_id_match.group(1)
-        print(f"Steam ID extraído: {steam_id}") # Debugging
+        # Fazendo uma requisição POST para o endpoint de verificação do Steam
+        response = requests.post("https://steamcommunity.com/openid/login", data=params)
 
-        player_profile_url = f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={STEAM_API_KEY}&steamids={steam_id}"
-        print(f"Buscando dados da Steam API: {player_profile_url}") # Debugging
-        try:
-            player_response = requests.get(player_profile_url)
-            player_response.raise_for_status() # Lança HTTPError para status de erro (4xx ou 5xx)
+        if "is_valid:true" in response.text:
+            steam_id_full_url = request.args.get('openid.claimed_id')
+            # Extrai apenas o ID numérico do Steam
+            steam_id_match = re.search(r'steamcommunity\.com/openid/id/(\d+)', steam_id_full_url)
+            if steam_id_match:
+                steam_id = steam_id_match.group(1)
+                user = buscar_id_usuario_steam(steam_id)
+                user_name = unquote(request.args.get('openid.ext1.value.personaname', '')) # Nome da persona do Steam
 
-            print(f"Status Code da Steam API: {player_response.status_code}") # Debugging
-            print(f"Headers da Steam API: {player_response.headers}") # Debugging
-            print(f"Corpo da resposta da Steam API (primeiros 500 chars): {player_response.text[:500]}...") # Debugging
+                if not user:
+                    # Se o usuário não existe, adicione-o ao DB
+                    user_id = registrar_usuario_steam(steam_id, user_name)
+                    print(f"Novo usuário Steam adicionado: {user_name} ({steam_id})")
+                else:
+                    user_id = user['id']
 
-            player_data = player_response.json()['response']['players'][0]
-            print(f"Dados do jogador Steam obtidos: {player_data.get('personaname')}") # Debugging
-            
-            # Extrair o avatar_url
-            avatar_url = player_data.get('avatarfull') # Use 'avatarfull' for the largest avatar image
-            print(f"Avatar URL Steam: {avatar_url}") # Debugging
 
-            # Modificado: Passar avatar_url para a função de registro
-            registrar_usuario_steam(player_data['personaname'], steam_id, avatar_url)
-            
-            # Buscar o user_id do banco de dados após o registro/atualização
-            user_id_from_db = buscar_id_usuario_steam(steam_id) 
-            
-            print(f"Retorno de buscar_id_usuario_steam: {user_id_from_db}") # Debugging: Verifique o que esta função retorna
-            
-            if user_id_from_db:
-                session['user_id'] = user_id_from_db
-                session['user_name'] = player_data['personaname']
+                # Configura a sessão do Flask (ainda é bom para o backend ter, mesmo com o JWT)
+                session['user_id'] = user_id
+                session['user_name'] = user_name
                 session['logged_in_via'] = 'steam'
                 session['steam_id'] = steam_id
-                session.permanent = True # Torna a sessão permanente
-                session.modified = True 
-                print(f"Sessão definida (após Steam login): user_id={session.get('user_id')}, user_name={session.get('user_name')}, logged_in_via={session.get('logged_in_via')}") # DEBUG CRÍTICO
-            else:
-                print(f"Erro: Não foi possível obter user_id do banco de dados para Steam ID: {steam_id}") # Debugging
-                return 'Erro: Falha ao obter ID do usuário após registro/busca.', 500
-        except requests.exceptions.RequestException as e:
-            print(f"Erro ao buscar dados da Steam API: {e}") # Debugging
-            return f'Erro ao buscar dados da Steam API: {e}', 500
-        except KeyError as e:
-            print(f"Erro ao analisar JSON da Steam API: {e}. Resposta: {player_response.text}") # Debugging
-            return f'Erro ao analisar dados da Steam API: {e}', 500
+                session.permanent = True
+                session.modified = True
 
+                print(f"Login Steam bem-sucedido para user_id: {user_id}, user_name: {user_name}")
+
+                # --- AQUI ESTÁ A LÓGICA DO TOKEN TEMPORÁRIO (JWT) ---
+                expiration_time = datetime.now(timezone.utc) + timedelta(seconds=60) # Token válido por 60 segundos
+                temp_token_payload = {
+                    'user_id': user_id,
+                    'exp': expiration_time.timestamp(), # Tempo de expiração em timestamp Unix
+                    'iat': datetime.now(timezone.utc).timestamp() # Tempo de emissão em timestamp Unix
+                }
+                # Codifica o token JWT usando a JWT_SECRET_KEY e o algoritmo HS256
+                temp_auth_token = jwt.encode(temp_token_payload, JWT_SECRET_KEY, algorithm='HS256')
+
+                # Redireciona para o FRONTEND_URL com o token como parâmetro de consulta
+                print(f"Redirecionando para {FRONTEND_URL}?auth_token={temp_auth_token}")
+                return redirect(f"{FRONTEND_URL}?auth_token={temp_auth_token}")
+            else:
+                print(f"Erro: Não foi possível extrair Steam ID de {steam_id_full_url}")
+                return redirect(FRONTEND_URL + '?login_error=invalid_steam_id')
+        else:
+            print("Verificação OpenID falhou.")
+            return redirect(FRONTEND_URL + '?login_error=steam_verification_failed')
+    elif request.args.get('openid.mode') == 'cancel':
+        print("Login Steam cancelado pelo usuário.")
+        return redirect(FRONTEND_URL + '?login_error=steam_cancelled')
     else:
-        print("Erro: Não foi possível extrair Steam ID da URL.") # Debugging
-        return 'Erro ao extrair Steam ID.'
-    
-    print(f"Redirecionando para o frontend: {FRONTEND_URL}") # Debugging
-    return redirect(FRONTEND_URL)
+        print("Requisição OpenID inválida.")
+        return redirect(FRONTEND_URL + '?login_error=invalid_openid_request')
 
 @app.route('/login_email', methods=['POST'])
 def login_email():
@@ -574,7 +565,49 @@ def unfollow_user():
         # Retorna 404 se o follow não foi encontrado (talvez já não estivesse seguindo)
         return jsonify({'message': 'Falha ao deixar de seguir ou follow não encontrado.'}), 404
 
+@app.route('/api/exchange_token', methods=['POST'])
+def exchange_token():
+    data = request.get_json()
+    temp_auth_token = data.get('token')
 
+    if not temp_auth_token:
+        return jsonify({'message': 'Token não fornecido'}), 400
+
+    try:
+        # Decodifique e verifique o token usando a JWT_SECRET_KEY
+        decoded_token = jwt.decode(temp_auth_token, JWT_SECRET_KEY, algorithms=['HS256'])
+        user_id = decoded_token.get('user_id')
+
+        if not user_id:
+            return jsonify({'message': 'Token inválido: user_id ausente'}), 400
+
+        user = buscar_usuario_por_id(user_id)
+        if not user:
+            return jsonify({'message': 'Usuário não encontrado'}), 404
+
+        # Agora, defina a sessão do Flask como de costume
+        session['user_id'] = user['id']
+        session['user_name'] = user['nome_usuario']
+        session['logged_in_via'] = 'steam' # Ou 'jwt_steam' se quiser diferenciar
+        if 'steam_id' in user and user['steam_id']: # Certifique-se que seu objeto 'user' do DB tem 'steam_id'
+             session['steam_id'] = user['steam_id']
+        session.permanent = True
+        session.modified = True
+
+        return jsonify({
+            'message': 'Sessão estabelecida com sucesso',
+            'isLoggedIn': True,
+            'userName': user['nome_usuario'],
+            'userId': user['id']
+        }), 200
+
+    except jwt.ExpiredSignatureError:
+        return jsonify({'message': 'Token expirado'}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({'message': 'Token inválido'}), 401
+    except Exception as e:
+        print(f"Erro interno ao trocar o token: {e}")
+        return jsonify({'message': 'Erro interno ao processar o token'}),
 
 
 if __name__ == '__main__':
