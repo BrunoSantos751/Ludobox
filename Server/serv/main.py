@@ -14,7 +14,7 @@ load_dotenv()
 
 app = Flask(__name__)
 # Configuração de CORS para permitir requisições do frontend
-CORS(app, supports_credentials=True, origins=['http://localhost:5173'])
+CORS(app, supports_credentials=True, origins=['https://trabalho-engenharia-de-software-phi.vercel.app'])
 app.secret_key = 'Ludobox' # Mantenha esta chave secreta e forte em produção
 
 # Configuração para sessões permanentes
@@ -26,7 +26,7 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 RAWG_API_KEY = '7221b0332ccb4921ad5eb4f3da1bddbb' 
 STEAM_API_KEY = '6A3A0276105A093B07C6CF6FC5FEFB2F' 
-RETURN_URL = 'http://localhost:8080/authorize'
+RETURN_URL = 'https://ludobox.onrender.com'
 FRONTEND_URL = 'https://trabalho-engenharia-de-software-phi.vercel.app/'
 
 @app.route('/')

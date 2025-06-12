@@ -14,7 +14,7 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
     if (!userId) return;
 
     // Buscar quem o usuário logado está seguindo
-    fetch(`http://localhost:8080/api/users/${userId}/seguindo`)
+    fetch(`https://ludobox.onrender.com/api/users/${userId}/seguindo`)
       .then(res => {
         if (!res.ok) throw new Error('Falha ao buscar quem você segue');
         return res.json();
@@ -23,7 +23,7 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
       .catch(err => console.error('Erro ao buscar quem você segue:', err));
 
     // Buscar os seguidores do usuário logado
-    fetch(`http://localhost:8080/api/users/${userId}/seguidores`)
+    fetch(`https://ludobox.onrender.com/api/users/${userId}/seguidores`)
       .then(res => {
         if (!res.ok) throw new Error('Falha ao buscar seguidores');
         return res.json();
@@ -54,7 +54,7 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
       return;
     }
     try {
-      const res = await fetch(`http://localhost:8080/api/users/search?query=${encodeURIComponent(termoBusca)}`);
+      const res = await fetch(`https://ludobox.onrender.com/api/users/search?query=${encodeURIComponent(termoBusca)}`);
       if (!res.ok) throw new Error('Falha ao buscar resultados da pesquisa de usuários');
       const data = await res.json();
       // Filtra o próprio usuário da lista de resultados
@@ -85,7 +85,7 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
       return;
     }
     try {
-      const res = await fetch('http://localhost:8080/api/follow', {
+      const res = await fetch('https://ludobox.onrender.com/api/follow', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -115,7 +115,7 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
 
   const deixarDeSeguirUsuario = async (idToUnfollow) => {
     try {
-      const res = await fetch('http://localhost:8080/api/unfollow', {
+      const res = await fetch('https://ludobox.onrender.com/api/unfollow', {
         method: 'POST', // O método HTTP precisa corresponder ao backend
         headers: {
           'Content-Type': 'application/json',

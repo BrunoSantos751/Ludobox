@@ -21,7 +21,7 @@ export default function Tendencias() {
 
   useEffect(() => {
     // Verifica status de login
-    fetch("http://localhost:8080/api/auth_status", {
+    fetch("https://ludobox.onrender.com/api/auth_status", {
       credentials: "include"
     })
       .then((res) => res.json())
@@ -52,7 +52,7 @@ export default function Tendencias() {
   }, [userId]);
 
   function fetchUserLikes(currentUserId) {
-    fetch(`http://localhost:8080/api/user_likes?user_id=${currentUserId}`)
+    fetch(`https://ludobox.onrender.com/api/user_likes?user_id=${currentUserId}`)
       .then(res => {
         if (!res.ok) {
           throw new Error('Erro ao carregar likes do usuário.');
@@ -69,7 +69,7 @@ export default function Tendencias() {
   }
 
   function carregarAvaliacoes() {
-    fetch('http://localhost:8080/avaliacoes/top')
+    fetch('https://ludobox.onrender.com/avaliacoes/top')
       .then(res => {
         if (!res.ok) {
           throw new Error('Erro ao carregar avaliações. Status: ' + res.status);
@@ -95,7 +95,7 @@ export default function Tendencias() {
     }
 
     const isCurrentlyLiked = likedEvaluations.has(avaliacao_id);
-    const endpoint = `http://localhost:8080/avaliacoes/toggle_like`;
+    const endpoint = `https://ludobox.onrender.com/avaliacoes/toggle_like`;
     
     fetch(endpoint, {
       method: "POST",
@@ -155,7 +155,7 @@ export default function Tendencias() {
     setFormData({ ...formData, nome_jogo: termo });
     if (termo.length > 2) {
       try {
-        const response = await fetch(`http://localhost:8080/api/games?search=${encodeURIComponent(termo)}&page_size=5`);
+        const response = await fetch(`https://ludobox.onrender.com/api/games?search=${encodeURIComponent(termo)}&page_size=5`);
         if (!response.ok) {
           throw new Error('Erro ao buscar sugestões de jogos.');
         }
@@ -181,7 +181,7 @@ export default function Tendencias() {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/avaliacoes", {
+      const response = await fetch("https://ludobox.onrender.com/avaliacoes", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

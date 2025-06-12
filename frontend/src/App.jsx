@@ -31,7 +31,7 @@ function App() {
       
       while (attempts < MAX_ATTEMPTS) {
         try {
-          const response = await fetch('http://localhost:8080/api/auth_status', {
+          const response = await fetch('https://ludobox.onrender.com/api/auth_status', {
             credentials: 'include' // Importante: envia os cookies de sessão!
           });
           const data = await response.json();
@@ -81,7 +81,7 @@ function App() {
 
   // Função chamada ao clicar em "Sair"
   function handleLogout() {
-    fetch('http://localhost:8080/logout', {
+    fetch('https://ludobox.onrender.com/logout', {
       method: 'POST',
       credentials: 'include' 
     })
