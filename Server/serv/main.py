@@ -27,7 +27,7 @@ app.config['SESSION_COOKIE_SECURE'] = True
 
 RAWG_API_KEY = '7221b0332ccb4921ad5eb4f3da1bddbb' 
 STEAM_API_KEY = '6A3A0276105A093B07C6CF6FC5FEFB2F' 
-RETURN_URL = 'https://ludobox.onrender.com'
+RETURN_URL = 'https://ludobox.onrender.com/authorize'
 FRONTEND_URL = 'https://trabalho-engenharia-de-software-phi.vercel.app/'
 
 @app.route('/')
@@ -40,7 +40,7 @@ def login():
         "https://steamcommunity.com/openid/login"
         "?openid.ns=http://specs.openid.net/auth/2.0"
         "&openid.mode=checkid_setup"
-        f"&openid.return_to=https://ludobox.onrender.com/authorize"
+        f"&openid.return_to={RETURN_URL}"
         "&openid.realm=https://ludobox.onrender.com/"
         "&openid.identity=http://specs.openid.net/auth/2.0/identifier_select"
         "&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select"
