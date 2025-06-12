@@ -62,7 +62,7 @@
 
 .catalogo-page ul{
   display: flex;
-  flex-wrap: wrap;
+  
 }
 
 .filtros-container{
@@ -148,6 +148,7 @@
   .catalogo-page {
     position: relative;
     flex-direction: column;
+    align-items: center;
     padding: 0 10px;
   }
 
@@ -214,12 +215,11 @@
     margin: 8px 15px;
   }
 
-  .catalogo-conteudo{
-    width: 960px;
-    height: 1000px;
-  }
+  
 
   .catalogo-conteudo ul {
+    justify-content: center;
+    width: 100%;
     padding: 0;
   }
 
@@ -239,3 +239,14 @@
   }
 }
 
+@media (max-width:712px){
+  .catalogo-conteudo{
+    width: 550px;
+  }
+}
+
+@media (max-width:570px){
+  .catalogo-conteudo{
+    width: 350px;
+  }
+}
