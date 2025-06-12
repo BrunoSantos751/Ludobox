@@ -23,7 +23,7 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 RAWG_API_KEY = '7221b0332ccb4921ad5eb4f3da1bddbb' 
 STEAM_API_KEY = '6A3A0276105A093B07C6CF6FC5FEFB2F' 
 RETURN_URL = 'http://localhost:8080/authorize'
-FRONTEND_URL = 'http://localhost:5173'
+FRONTEND_URL = 'https://trabalho-engenharia-de-software-phi.vercel.app/'
 
 @app.route('/')
 def index():
