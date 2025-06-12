@@ -7,8 +7,8 @@ from comandos_dados import * # Importa todas as funções de interação com o D
 from flask_cors import CORS
 from datetime import timedelta # Importar timedelta
 from urllib.parse import unquote
-from dotenv import load_dotenv
-load_dotenv()
+import traceback 
+
 
 
 
@@ -26,7 +26,7 @@ app.config['SESSION_COOKIE_SECURE'] = True
 
 
 RAWG_API_KEY = '7221b0332ccb4921ad5eb4f3da1bddbb' 
-STEAM_API_KEY = '6A3A0276105A093B07C6CF6FC5FEFB2F' 
+STEAM_API_KEY = '8D3606789A4D5453D6977CEDC0C10AD8' 
 RETURN_URL = 'https://ludobox.onrender.com/authorize'
 FRONTEND_URL = 'https://trabalho-engenharia-de-software-phi.vercel.app/'
 
@@ -50,66 +50,102 @@ def login():
 
 @app.route('/authorize')
 def authorize():
-    print("Iniciando rota /authorize...") # Debugging
-    openid_url = request.args.get('openid.claimed_id')
-    if not openid_url:
-        print("Erro: URL inválida (openid.claimed_id não encontrado).") # Debugging
-        return 'Erro: URL inválida.'
+    print("--------------------------------------------------")
+    print("Iniciando rota /authorize para callback da Steam...")
+    print(f"Parâmetros recebidos na /authorize: {request.args}") # MUITO IMPORTANTE: loga todos os parâmetros da URL
 
-    steam_id_match = re.search(r'/openid/id/(\d+)', openid_url)
-    if steam_id_match:
+    if not request.args.get('openid.mode') == 'id_res':
+        print(f"Erro: Modo OpenID inválido. openid.mode: {request.args.get('openid.mode')}")
+        return "Erro no login da Steam: Modo OpenID inválido.", 400
+
+    if not request.args.get('openid.claimed_id'):
+        print("Erro: openid.claimed_id não encontrado nos parâmetros de retorno.")
+        return "Erro no login da Steam: ID da Steam não fornecido.", 400
+
+    try:
+        # Extrai o Steam ID da URL
+        # O Steam ID é uma parte do openid.claimed_id
+        claimed_id = request.args['openid.claimed_id']
+        steam_id_match = re.search(r'https://steamcommunity.com/openid/id/(\d+)', claimed_id)
+
+        if not steam_id_match:
+            print(f"Erro: Steam ID não encontrado na claimed_id: {claimed_id}.")
+            return "Erro no login da Steam: Steam ID não encontrado.", 400
+        
         steam_id = steam_id_match.group(1)
-        print(f"Steam ID extraído: {steam_id}") # Debugging
+        print(f"Steam ID extraído: {steam_id}")
 
-        player_profile_url = f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={STEAM_API_KEY}&steamids={steam_id}"
-        print(f"Buscando dados da Steam API: {player_profile_url}") # Debugging
-        try:
-            player_response = requests.get(player_profile_url)
-            player_response.raise_for_status() # Lança HTTPError para status de erro (4xx ou 5xx)
+        # Busca dados do jogador na Steam API
+        # Certifique-se de que STEAM_API_KEY está configurada corretamente
+        player_data_url = f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={STEAM_API_KEY}&steamids={steam_id}"
+        print(f"Buscando dados da Steam API: {player_data_url}")
+        
+        response = requests.get(player_data_url)
+        print(f"Status Code da Steam API: {response.status_code}")
+        
+        # Levanta um erro HTTP para status codes 4xx/5xx
+        response.raise_for_status()
+        
+        player_data = response.json()
+        print(f"Dados brutos da Steam API: {player_data}") # Veja o JSON completo retornado pela Steam
 
-            print(f"Status Code da Steam API: {player_response.status_code}") # Debugging
-            print(f"Headers da Steam API: {player_response.headers}") # Debugging
-            print(f"Corpo da resposta da Steam API (primeiros 500 chars): {player_response.text[:500]}...") # Debugging
+        # Validação da estrutura da resposta da Steam API
+        if not player_data or 'response' not in player_data or \
+           'players' not in player_data['response'] or \
+           not player_data['response']['players']:
+            print("Erro: Resposta inesperada ou vazia da Steam API (estrutura inválida).")
+            return "Erro no login da Steam: Dados do jogador não encontrados ou inválidos.", 500
 
-            player_data = player_response.json()['response']['players'][0]
-            print(f"Dados do jogador Steam obtidos: {player_data.get('personaname')}") # Debugging
-            
-            # Extrair o avatar_url
-            avatar_url = player_data.get('avatarfull') # Use 'avatarfull' for the largest avatar image
-            print(f"Avatar URL Steam: {avatar_url}") # Debugging
+        player_info = player_data['response']['players'][0]
+        user_name = player_info.get('personaname', 'Usuário Steam')
+        avatar_url = player_info.get('avatarfull', '')
+        print(f"Dados do jogador Steam obtidos: Nome={user_name}, Avatar={avatar_url}")
 
-            # Modificado: Passar avatar_url para a função de registro
-            registrar_usuario_steam(player_data['personaname'], steam_id, avatar_url)
-            
-            # Buscar o user_id do banco de dados após o registro/atualização
-            user_id_from_db = buscar_id_usuario_steam(steam_id) 
-            
-            print(f"Retorno de buscar_id_usuario_steam: {user_id_from_db}") # Debugging: Verifique o que esta função retorna
-            
-            if user_id_from_db:
-                session['user_id'] = user_id_from_db
-                session['user_name'] = player_data['personaname']
-                session['logged_in_via'] = 'steam'
-                session['steam_id'] = steam_id
-                session.permanent = True # Torna a sessão permanente
-                session.modified = True 
-                print(f"Sessão definida (após Steam login): user_id={session.get('user_id')}, user_name={session.get('user_name')}, logged_in_via={session.get('logged_in_via')}") # DEBUG CRÍTICO
-            else:
-                print(f"Erro: Não foi possível obter user_id do banco de dados para Steam ID: {steam_id}") # Debugging
-                return 'Erro: Falha ao obter ID do usuário após registro/busca.', 500
-        except requests.exceptions.RequestException as e:
-            print(f"Erro ao buscar dados da Steam API: {e}") # Debugging
-            return f'Erro ao buscar dados da Steam API: {e}', 500
-        except KeyError as e:
-            print(f"Erro ao analisar JSON da Steam API: {e}. Resposta: {player_response.text}") # Debugging
-            return f'Erro ao analisar dados da Steam API: {e}', 500
+        # Lógica para registrar/buscar usuário no DB
+        # Assumindo que buscar_id_usuario_steam e registrar_usuario_steam estão em comandos_dados.py
+        user_id_from_db = buscar_id_usuario_steam(steam_id)
+        print(f"Retorno de buscar_id_usuario_steam: {user_id_from_db}")
 
-    else:
-        print("Erro: Não foi possível extrair Steam ID da URL.") # Debugging
-        return 'Erro ao extrair Steam ID.'
+        if user_id_from_db is None:
+            print("Usuário Steam não encontrado no DB, registrando novo...")
+            user_id = registrar_usuario_steam(steam_id, user_name, avatar_url)
+            print(f"Novo usuário Steam registrado com ID: {user_id}")
     
-    print(f"Redirecionando para o frontend: {FRONTEND_URL}") # Debugging
-    return redirect(FRONTEND_URL)
+
+        if user_id:
+            # Configura a sessão do Flask
+            session.permanent = True # Garante que a sessão seja permanente (dura o tempo configurado em app.permanent_session_lifetime)
+            session['user_id'] = user_id
+            session['user_name'] = user_name
+            session['logged_in_via'] = 'steam'
+            session.modified = True # Força a sessão a ser salva após modificações
+
+            print(f"Sessão definida (após Steam login): user_id={session.get('user_id')}, user_name={session.get('user_name')}, logged_in_via={session.get('logged_in_via')}")
+            print(f"Redirecionando para o frontend: {'https://trabalho-engenharia-de-software-phi.vercel.app'}")
+            
+            # Redireciona para a URL do frontend
+            return redirect('https://trabalho-engenharia-de-software-phi.vercel.app')
+        else:
+            print("Erro: Não foi possível obter ou registrar user_id após o login da Steam (user_id é None ou inválido).")
+            return "Erro no login da Steam: Falha ao processar informações do usuário após autenticação.", 500
+
+    except requests.exceptions.RequestException as e:
+        print(f"Erro de Requisição (RequestException) ao buscar dados da Steam API: {e}")
+        # Imprime o traceback completo para depuração
+        traceback.print_exc()
+        return f"Erro no login da Steam: Falha na comunicação com a API da Steam. Detalhes: {e}", 500
+    except KeyError as e:
+        print(f"KeyError (Chave ausente) ao processar dados da Steam ou da requisição: {e}")
+        # Imprime o traceback completo
+        traceback.print_exc()
+        return f"Erro no login da Steam: Dados incompletos ou esperados não encontrados. Chave ausente: {e}", 500
+    except Exception as e:
+        print(f"Erro inesperado (Exception geral) no login da Steam: {e}")
+        # Imprime o traceback completo para qualquer outra exceção não tratada
+        traceback.print_exc()
+        return f"Erro interno no servidor ao processar login da Steam. Detalhes: {e}", 500
+    finally:
+        print("--------------------------------------------------")
 
 @app.route('/login_email', methods=['POST'])
 def login_email():
