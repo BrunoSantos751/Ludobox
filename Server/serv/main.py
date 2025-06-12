@@ -32,8 +32,6 @@ FRONTEND_URL = 'https://trabalho-engenharia-de-software-phi.vercel.app/'
 
 @app.route('/')
 def index():
-    # Como o frontend agora lida com o roteamento, esta rota pode ser mais simples
-    # ou direcionar para o frontend principal.
     return redirect(FRONTEND_URL)
 
 @app.route('/login')
@@ -42,8 +40,8 @@ def login():
         "https://steamcommunity.com/openid/login"
         "?openid.ns=http://specs.openid.net/auth/2.0"
         "&openid.mode=checkid_setup"
-        f"&openid.return_to={RETURN_URL}"
-        "&openid.realm=https://ludobox.onrender.com"
+        f"&openid.return_to=https://ludobox.onrender.com/authorize"
+        "&openid.realm=https://ludobox.onrender.com/"
         "&openid.identity=http://specs.openid.net/auth/2.0/identifier_select"
         "&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select"
     )
