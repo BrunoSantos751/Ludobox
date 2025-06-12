@@ -100,13 +100,13 @@ function App() {
   }
 
   // Se estiver a carregar o status de autenticação, mostra um indicador de carregamento
-  if (isLoading) {
+  /*if (isLoading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'white', fontSize: '24px' }}>
         Carregando...
       </div>
     );
-  }
+  }*/
 
   // Se o carregamento terminou, renderiza a aplicação principal
   return (
