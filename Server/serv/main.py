@@ -61,15 +61,17 @@ def authorize():
         player_response = requests.get(player_profile_url)
         player_data = player_response.json()['response']['players'][0]
         
+        # Adicionar o avatar_url à sessão e passá-lo para a função de registro
+        avatar_url = player_data.get('avatarfull') # Usando o avatar completo
+        
         # Estas funções já interagem com o PostgreSQL via db.py
-        registrar_usuario_steam(player_data['personaname'],steam_id)
+        registrar_usuario_steam(player_data['personaname'], steam_id, avatar_url) # <--- AQUI A MUDANÇA
         user_id = buscar_id_usuario_steam(steam_id)
         if user_id:
-            # user_id vindo do banco de dados (provavelmente um dicionário)
-            # user_id['id'] é o correto se estiver usando RealDictCursor
             session['user_id'] = user_id
             session['user_name'] = player_data['personaname']
             session['logged_in_via'] = 'steam'
+            
     else:
         return 'Erro ao extrair Steam ID.'
     
