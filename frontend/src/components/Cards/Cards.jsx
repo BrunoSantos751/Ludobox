@@ -5,7 +5,7 @@ export default function Cards({ filtro, paginaAtual = 1, setTotalPaginas = null,
   const [jogos, setJogos] = useState([]);
 
   useEffect(() => {
-    let url = `http://127.0.0.1:8080/api/games`;
+    let url = `https://ludobox.onrender.com/api/games`;
     const params = [`page_size=${limite}`, `page=${paginaAtual}`];
 
     if (filtro?.ordenar) params.push(`ordering=${filtro.ordenar}`);
