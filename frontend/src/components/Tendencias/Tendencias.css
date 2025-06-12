@@ -1,3 +1,11 @@
+/* Reset universal para garantir consistência entre navegadores */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+}
+
 .tendencias-pagina {
   display: flex;
   justify-content: center;
@@ -58,6 +66,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
 }
 
 .comentario-header span {
@@ -66,6 +75,8 @@
 
 .game-title {
   text-transform: capitalize;
+  margin: 0;
+  padding: 0;
 }
 
 .tendencias-comentario-info {
@@ -89,10 +100,47 @@
 .likes {
   display: flex;
   align-items: center;
+  gap: 5px; /* Espaço entre os ícones e o texto de likes */
 }
 
-.likes span {
-  margin-right: 5px;
+/* Estilo para o botão de curtir (agora apenas um) */
+.like-btn {
+  background-color: transparent; /* Garante que o fundo seja transparente */
+  border: none;
+  color: #FA8305; /* Cor para o ícone */
+  cursor: pointer;
+  padding: 5px; /* Adiciona um pequeno padding para facilitar o clique */
+  border-radius: 50%; /* Torna o botão um círculo para o visual */
+  font-size: 1.2rem; /* Tamanho do ícone */
+  display: flex; /* Para centralizar o ícone */
+  align-items: center;
+  justify-content: center;
+  /* Transição para suavizar a mudança de cor e preenchimento */
+  transition: color 0.2s ease-in-out, font-variation-settings 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+.like-btn:disabled {
+  color: #888; /* Cor quando desabilitado */
+  cursor: not-allowed;
+}
+
+.like-btn:hover:not(:disabled) {
+  color: #ff9d3d; /* Um pouco mais claro no hover */
+  background-color: rgba(250, 131, 5, 0.1); /* Um fundo sutil no hover */
+}
+
+/* Estilo para o ícone de coração quando "curtido" - Aumenta a especificidade */
+.material-symbols-outlined.liked-icon {
+  font-variation-settings: 'FILL' 1; /* Preenche o ícone */
+  color: #FA8305; /* Manteve a cor laranja quando preenchido */
+}
+
+/* Novo estilo para o container do botão de avaliação */
+.evaluation-button-container {
+  display: flex;
+  justify-content: flex-end; /* Alinha o conteúdo (o botão) à direita */
+  margin-bottom: 20px; /* Mantém a margem inferior para separar do conteúdo abaixo */
+  padding-right: 20px; /* Adiciona um pouco de espaço da borda direita do container */
 }
 
 @media (max-width: 768px) {
@@ -118,5 +166,30 @@
     width: 100%;
     max-width: 100%;
     height: auto;
+  }
+  .form-avaliacao {
+    background-color: #1f1f1f;
+    padding: 20px;
+    border-radius: 10px;
+    color: white;
+  }
+
+  .form-avaliacao input,
+  .form-avaliacao textarea {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #555;
+    background-color: #2c2c2c;
+    color: white;
+  }
+
+  .form-avaliacao button:hover {
+    background-color: #e07d17;
+  }
+  
+  /* Ajuste para o botão em telas menores se ele precisar de um alinhamento diferente */
+  .evaluation-button-container {
+    justify-content: center; /* Centraliza o botão em telas pequenas, por exemplo */
+    padding-right: 0; /* Remove o padding em telas pequenas */
   }
 }

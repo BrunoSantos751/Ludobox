@@ -8,6 +8,7 @@ import Login from './components/Login/Login';
 import Navbar from './components/Navbar/Navbar'; 
 import Tendencias from './components/Tendencias/Tendencias';
 import Footer from './components/Footer/Footer';
+import Perfil from './components/Perfil/Perfil';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -52,6 +53,7 @@ function App() {
         <Route path='/catalogo' element={<Catalogo />} />
         <Route path='/login' element={<Login />} />
         <Route path='/tendencias' element={<Tendencias />}/>
+        <Route path='/perfil' element={<Perfil />}/>
       </Routes>
       <Footer />
     </BrowserRouter>

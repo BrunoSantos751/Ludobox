@@ -1,5 +1,98 @@
+# comandos_dados.py
+
 from db import get_connection
 from datetime import datetime
+
+# ===================== AVALIAÇÕES =====================
+
+def inserir_avaliacao(user_id, nota, comentario, nome_jogo):
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute("INSERT INTO avaliacoes (user_id, nota, comentario, nome_jogo) VALUES (%s, %s, %s, %s) RETURNING avaliacao_id",
+              (user_id, nota, comentario, nome_jogo))
+    avaliacao_id = c.fetchone()['avaliacao_id']
+    conn.commit()
+    conn.close()
+    return avaliacao_id
+
+def curtir_avaliacao(avaliacao_id):
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute("UPDATE avaliacoes SET likes = likes + 1 WHERE avaliacao_id = %s", (avaliacao_id,))
+    conn.commit()
+    conn.close()
+
+def descurtir_avaliacao(avaliacao_id):
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute("UPDATE avaliacoes SET likes = likes - 1 WHERE avaliacao_id = %s", (avaliacao_id,))
+    conn.commit()
+    conn.close()
+
+def listar_top_avaliacoes(limit=10):
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute("""
+        SELECT
+            a.nome_jogo, a.likes, a.avaliacao_id, a.user_id,
+            a.nota, a.comentario, a.data_avaliacao,
+            u.nome AS user_nome, u.avatar_url
+        FROM avaliacoes a
+        JOIN users u ON a.user_id = u.id
+        ORDER BY a.likes DESC
+        LIMIT %s
+    """, (limit,))
+    resultados = c.fetchall()
+    conn.close()
+    return resultados
+
+def buscar_avaliacoes_por_usuario(user_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT * FROM avaliacoes
+        WHERE user_id = %s
+        ORDER BY data_avaliacao DESC
+    """, (user_id,))
+    avaliacoes = cursor.fetchall()
+    conn.close()
+    return avaliacoes
+
+def toggle_like_avaliacao(user_id, avaliacao_id):
+    conn = get_connection()
+    c = conn.cursor()
+
+    # Verificar se o usuário já curtiu a avaliação na tabela user_evaluation_likes
+    c.execute("SELECT COUNT(*) FROM user_evaluation_likes WHERE user_id = %s AND avaliacao_id = %s", (user_id, avaliacao_id))
+    result = c.fetchone()
+    # Adicionado verificação para garantir que 'result' não é None antes de acessar 'count'
+    has_liked = result and result['count'] > 0
+
+    if has_liked:
+        # Se já curtiu, descurtir: remove da tabela user_evaluation_likes e decrementa likes em avaliacoes
+        c.execute("DELETE FROM user_evaluation_likes WHERE user_id = %s AND avaliacao_id = %s", (user_id, avaliacao_id))
+        c.execute("UPDATE avaliacoes SET likes = likes - 1 WHERE avaliacao_id = %s", (avaliacao_id,))
+        message = "Avaliação descurtida com sucesso"
+    else:
+        # Se não curtiu, curtir: insere na tabela user_evaluation_likes e incrementa likes em avaliacoes
+        c.execute("INSERT INTO user_evaluation_likes (user_id, avaliacao_id) VALUES (%s, %s)", (user_id, avaliacao_id))
+        c.execute("UPDATE avaliacoes SET likes = likes + 1 WHERE avaliacao_id = %s", (avaliacao_id,))
+        message = "Avaliação curtida com sucesso"
+
+    conn.commit()
+    conn.close()
+    return message
+
+# NOVA FUNÇÃO (para suportar a rota /api/user_likes no main.py)
+def get_user_liked_evaluations(user_id):
+    conn = get_connection()
+    c = conn.cursor()
+    # Busca IDs de avaliações que o usuário curtiu na tabela user_evaluation_likes
+    c.execute("SELECT avaliacao_id FROM user_evaluation_likes WHERE user_id = %s", (user_id,))
+    liked_ids_dicts = c.fetchall()
+    conn.close()
+    return [d['avaliacao_id'] for d in liked_ids_dicts]
+
 
 # ===================== USERS =====================
 
@@ -36,127 +129,144 @@ def buscar_id_usuario_steam(steam_id):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM users WHERE steam_id = %s", (steam_id,))
-    user = cursor.fetchone()
+    user_id = cursor.fetchone()
+    conn.close()
+    return user_id['id'] if user_id else None
+
+def buscar_usuario_por_email(email):
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute("SELECT * FROM users WHERE email = %s", (email,))
+    user = c.fetchone()
     conn.close()
     return user
 
-def listar_usuarios_email(email):
+def buscar_usuario_por_id(user_id):
     conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
-    emailReturn = cursor.fetchone()
+    c = conn.cursor()
+    c.execute("SELECT id, nome, email, bio, avatar_url FROM users WHERE id = %s", (user_id,))
+    user = c.fetchone()
     conn.close()
-    return emailReturn
+    return user
 
-def listar_usuarios_nome(nome):
+def atualizar_usuario(user_id, nome, email, bio, avatar_url):
     conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE nome = %s", (nome,))
-    emailReturn = cursor.fetchone()
-    conn.close()
-    return emailReturn
-
-def atualizar_usuario(id_usuario, nome=None, email=None, senha=None, bio=None, avatar_url=None):
-    conn = get_connection()
-    cursor = conn.cursor()
-    campos = []
-    valores = []
-    if nome: campos.append("nome = %s"); valores.append(nome)
-    if email: campos.append("email = %s"); valores.append(email)
-    if senha: campos.append("senha = %s"); valores.append(senha)
-    if bio is not None: campos.append("bio = %s"); valores.append(bio)
-    if avatar_url is not None: campos.append("avatar_url = %s"); valores.append(avatar_url)
-    valores.append(id_usuario)
-    cursor.execute(f"UPDATE users SET {', '.join(campos)} WHERE id = %s", valores)
+    c = conn.cursor()
+    c.execute("""
+        UPDATE users
+        SET nome = %s, email = %s, bio = %s, avatar_url = %s
+        WHERE id = %s
+    """, (nome, email, bio, avatar_url, user_id))
     conn.commit()
     conn.close()
 
-def deletar_usuario(id_usuario):
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM users WHERE id = %s", (id_usuario,))
-    conn.commit()
-    conn.close()
-
-# ===================== USER_GAMES =====================
-
-def registrar_jogo(user_id, nome_jogo, status):
+# NOVA FUNÇÃO (para suportar a rota /api/users/<int:user_id>/profile no main.py)
+# Esta é uma refatoração da função que faltava no main.py
+def atualizar_bio_usuario(user_id, new_bio):
     conn = get_connection()
     c = conn.cursor()
     try:
-        c.execute("INSERT INTO user_games (user_id, nome_jogo, status) VALUES (%s, %s, %s)",
-                  (user_id, nome_jogo, status))
+        c.execute("UPDATE users SET bio = %s WHERE id = %s", (new_bio, user_id))
         conn.commit()
         return True
-    except:
+    except Exception as e:
+        print(f"Erro ao atualizar bio do usuário {user_id}: {e}")
+        conn.rollback()
         return False
+    finally:
+        conn.close()
 
-def alterar_status_jogo(user_id, nome_jogo, novo_status):
+# ===================== Jogos Favoritos =====================
+
+def adicionar_jogo_favorito(user_id, game_id, game_name, game_image):
     conn = get_connection()
-    c = conn.cursor()
+    cursor = conn.cursor()
     try:
-        c.execute("UPDATE user_games SET status = %s WHERE user_id = %s AND nome_jogo = %s",
-                  (novo_status, user_id, nome_jogo))
+        cursor.execute("""
+            INSERT INTO jogos_favoritos (user_id, game_id, game_name, game_image)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (user_id, game_id) DO NOTHING
+        """, (user_id, game_id, game_name, game_image))
         conn.commit()
-        return c.rowcount > 0
-    except:
-        return False
+    except Exception as e:
+        conn.rollback()
+        print(f"Erro ao adicionar jogo favorito: {e}")
+    finally:
+        conn.close()
 
-def listar_jogos_do_usuario(user_id):
+def remover_jogo_favorito(user_id, game_id):
     conn = get_connection()
-    c = conn.cursor()
+    cursor = conn.cursor()
     try:
-        c.execute("SELECT nome_jogo, status FROM user_games WHERE user_id = %s", (user_id,))
-        jogos = c.fetchall()
-        return jogos
-    except:
-        return []
+        cursor.execute("DELETE FROM jogos_favoritos WHERE user_id = %s AND game_id = %s", (user_id, game_id))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"Erro ao remover jogo favorito: {e}")
+    finally:
+        conn.close()
 
-# ===================== Avaliacoes =====================
-
-def inserir_avaliacao(user_id, nota, comentario, nome_jogo):
+def listar_jogos_favoritos(user_id):
     conn = get_connection()
-    c = conn.cursor()
-    c.execute("""
-        INSERT INTO avaliacoes (user_id, nota, comentario, nome_jogo)
-        VALUES (%s, %s, %s, %s)
-    """, (user_id, nota, comentario, nome_jogo))
-    conn.commit()
-    c.execute("SELECT LASTVAL()")
-    avaliacao_id = c.fetchone()['lastval']
+    cursor = conn.cursor()
+    cursor.execute("SELECT game_id, game_name, game_image FROM jogos_favoritos WHERE user_id = %s", (user_id,))
+    favoritos = cursor.fetchall()
     conn.close()
-    return avaliacao_id
+    return favoritos
 
-def curtir_avaliacao(avaliacao_id):
+def verificar_jogo_favorito(user_id, game_id):
     conn = get_connection()
-    c = conn.cursor()
-    c.execute("UPDATE avaliacoes SET likes = likes + 1 WHERE avaliacao_id = %s", (avaliacao_id,))
-    conn.commit()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM jogos_favoritos WHERE user_id = %s AND game_id = %s", (user_id, game_id))
+    result = cursor.fetchone()
     conn.close()
+    return result['count'] > 0
 
-def descurtir_avaliacao(avaliacao_id):
+# NOVA FUNÇÃO (para suportar a rota /api/users/<int:user_id>/games no main.py)
+def adicionar_ou_atualizar_jogo_usuario(user_id, nome_jogo, status):
     conn = get_connection()
-    c = conn.cursor()
-    c.execute("UPDATE avaliacoes SET likes = likes - 1 WHERE avaliacao_id = %s", (avaliacao_id,))
-    conn.commit()
-    conn.close()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT COUNT(*) FROM user_games WHERE user_id = %s AND nome_jogo = %s", (user_id, nome_jogo))
+        exists = cursor.fetchone()['count'] > 0
 
-def listar_top_avaliacoes(limit=10):
+        if exists:
+            cursor.execute("UPDATE user_games SET status = %s WHERE user_id = %s AND nome_jogo = %s", (status, user_id, nome_jogo))
+            message = "Status do jogo atualizado com sucesso"
+        else:
+            cursor.execute("INSERT INTO user_games (user_id, nome_jogo, status) VALUES (%s, %s, %s)", (user_id, nome_jogo, status))
+            message = "Jogo adicionado com sucesso"
+        conn.commit()
+        return True, message
+    except Exception as e:
+        conn.rollback()
+        return False, str(e)
+    finally:
+        conn.close()
+
+# NOVA FUNÇÃO (para suportar a rota /api/users/<int:user_id>/games_by_status no main.py)
+def listar_jogos_do_usuario_com_status(user_id):
     conn = get_connection()
-    c = conn.cursor()
-    c.execute("""
-        SELECT 
-            a.nome_jogo, a.likes, a.avaliacao_id, a.user_id, 
-            a.nota, a.comentario, a.data_avaliacao,
-            u.nome AS user_nome, u.avatar_url
-        FROM avaliacoes a
-        JOIN users u ON a.user_id = u.id
-        ORDER BY a.likes DESC
-        LIMIT %s
-    """, (limit,))
-    resultados = c.fetchall()
+    cursor = conn.cursor()
+    cursor.execute("SELECT nome_jogo, status FROM user_games WHERE user_id = %s", (user_id,))
+    games = cursor.fetchall()
     conn.close()
-    return resultados
+    return games
+
+# NOVA FUNÇÃO (para suportar a rota /api/users/<int:user_id>/reviews no main.py)
+def listar_avaliacoes_do_usuario(user_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT avaliacao_id, nome_jogo, nota, comentario, data_avaliacao
+        FROM avaliacoes
+        WHERE user_id = %s
+        ORDER BY data_avaliacao DESC
+    """, (user_id,))
+    reviews = cursor.fetchall()
+    conn.close()
+    return reviews
+
 
 # ===================== Follows =====================
 
@@ -169,15 +279,49 @@ def criar_follow(seguidor_id, seguindo_id):
 
 def listar_follows():
     conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, seguidor_id, seguindo_id FROM follows")
-    follows = cursor.fetchall()
+    c = conn.cursor()
+    c.execute("SELECT * FROM follows")
+    follows = c.fetchall()
     conn.close()
     return follows
 
-def deletar_follow(id_follow):
+def remover_follow(seguidor_id, seguindo_id):
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM follows WHERE id = %s", (id_follow,))
+    cursor.execute("DELETE FROM follows WHERE seguidor_id = %s AND seguindo_id = %s", (seguidor_id, seguindo_id))
     conn.commit()
     conn.close()
+
+def verificar_follow(seguidor_id, seguindo_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM follows WHERE seguidor_id = %s AND seguindo_id = %s", (seguidor_id, seguindo_id))
+    result = cursor.fetchone()
+    conn.close()
+    return result['count'] > 0
+
+def listar_seguindo(user_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT u.id, u.nome, u.avatar_url
+        FROM follows f
+        JOIN users u ON f.seguindo_id = u.id
+        WHERE f.seguidor_id = %s
+    """, (user_id,))
+    seguindo = cursor.fetchall()
+    conn.close()
+    return seguindo
+
+def listar_seguidores(user_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT u.id, u.nome, u.avatar_url
+        FROM follows f
+        JOIN users u ON f.seguidor_id = u.id
+        WHERE f.seguindo_id = %s
+    """, (user_id,))
+    seguidores = cursor.fetchall()
+    conn.close()
+    return seguidores

@@ -9,9 +9,28 @@ export default function Navbar({ isLoggedIn, userName, onLogout }) {
   const [click, setClick] = useState(false);
 
   // Função para lidar com o clique no botão "Sair"
-  const handleLogoutClick = (e) => {
+  const handleLogoutClick = async (e) => { // Adicionado 'async' aqui
     e.preventDefault(); // Impede o comportamento padrão do link
-    onLogout(); // Chama a função onLogout passada via props
+
+    try {
+      const response = await fetch("http://localhost:8080/logout", {
+        method: "POST",
+        credentials: "include" // Importante para enviar cookies de sessão
+      });
+
+      if (response.ok) {
+        console.log("Logout realizado com sucesso no backend.");
+        onLogout(); // Chama a função onLogout passada via props para atualizar o estado no App.jsx
+        // O redirecionamento será feito pelo App.jsx ou pela lógica de rota principal
+      } else {
+        const errorData = await response.json();
+        console.error("Erro ao fazer logout no backend:", errorData.message);
+        // Opcional: mostrar uma mensagem de erro para o usuário
+      }
+    } catch (error) {
+      console.error("Erro de rede ao tentar fazer logout:", error);
+      // Opcional: mostrar uma mensagem de erro para o usuário
+    }
   };
 
   function handleClick(){

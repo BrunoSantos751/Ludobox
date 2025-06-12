@@ -1,0 +1,342 @@
+/* Estilos para o componente Profile */
+:root {
+  --primary-color: #FF6600;
+  --background-color: #000000;
+  --text-color: #FFFFFF;
+  --secondary-text: #999999;
+  --card-background: #111111;
+  --navbar-background: #0A0A0A;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.profile-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Barra de navegação */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #222;
+  margin-bottom: 30px;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  height: 40px;
+  width: auto;
+}
+
+.navbar-menu {
+  display: flex;
+  list-style: none;
+  gap: 20px;
+}
+
+.navbar-item {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--secondary-text);
+  transition: color 0.3s;
+}
+
+.navbar-item:hover, .navbar-item.active {
+  color: var(--primary-color);
+}
+
+.navbar-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+/* Seção de perfil principal */
+.profile-header {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.profile-avatar-container {
+  flex-shrink: 0;
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.profile-username {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 15px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--secondary-text);
+}
+
+.profile-bio {
+  font-size: 14px;
+  color: var(--secondary-text);
+  max-width: 500px;
+}
+
+/* Estatísticas de jogos */
+.game-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 50px;
+}
+
+.game-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.game-stat-value {
+  font-size: 48px;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 5px;
+}
+
+.game-stat-label {
+  font-size: 12px;
+  color: var(--secondary-text);
+  text-align: center;
+}
+
+/* Seção de jogos por status (antiga favorite-games-section) */
+.section-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.highlight {
+  color: var(--primary-color);
+}
+
+.games-by-status-section { /* Nova classe */
+  margin-bottom: 50px;
+}
+
+.game-grid { /* Nova classe */
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.game-card {
+  position: relative;
+  height: 250px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.game-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.game-card:hover .game-image {
+  transform: scale(1.05);
+}
+
+.game-title-overlay { /* Nova classe para o título */
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8) 50%);
+}
+
+.game-title-overlay h3 {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Seção de avaliações */
+.latest-reviews-section {
+  margin-bottom: 50px;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.review-item {
+  display: flex;
+  gap: 15px;
+  background-color: var(--card-background);
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.review-game-image {
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.review-game-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.review-content {
+  flex-grow: 1;
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.review-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.review-username {
+  font-weight: bold;
+}
+
+.review-action {
+  color: var(--secondary-text);
+  font-size: 14px;
+}
+
+.review-game-name {
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.review-rating {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  color: var(--primary-color);
+  font-size: 18px;
+}
+
+.review-comment {
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .profile-info {
+    align-items: center;
+  }
+  
+  .game-stats {
+    flex-direction: column;
+    gap: 30px;
+    align-items: center;
+  }
+  
+  .game-grid { /* Usar nova classe */
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-menu {
+    gap: 10px;
+  }
+  
+  .navbar-item {
+    font-size: 12px;
+  }
+  
+  .profile-stats {
+    gap: 15px;
+  }
+  
+  .game-grid { /* Usar nova classe */
+    grid-template-columns: 1fr;
+  }
+  
+  .game-stat-value {
+    font-size: 36px;
+  }
+  
+  .section-title {
+    font-size: 20px;
+  }
+}
