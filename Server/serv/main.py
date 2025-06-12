@@ -5,12 +5,26 @@ from urllib.parse import quote as encodeURIComponent
 from werkzeug.security import generate_password_hash, check_password_hash
 from comandos_dados import * # Importa todas as funções de interação com o DB
 from flask_cors import CORS
+from datetime import timedelta # Importar timedelta
+from urllib.parse import unquote
 
 app = Flask(__name__)
+# Configuração de CORS para permitir requisições do frontend
 CORS(app, supports_credentials=True, origins=['http://localhost:5173'])
-app.secret_key = 'Ludobox'
-RAWG_API_KEY = '7221b0332ccb4921ad5eb4f3da1bddbb' # Replace with your actual key if different
-STEAM_API_KEY = '6A3A0276105A093B07C6CF6FC5FEFB2F' # Replace with your actual key if different
+app.secret_key = 'Ludobox' # Mantenha esta chave secreta e forte em produção
+
+# Configuração para sessões permanentes
+app.permanent_session_lifetime = timedelta(days=7) # Exemplo: sessão dura 7 dias
+# Força o domínio do cookie de sessão para 'localhost'
+# Isso é crucial para que o navegador envie o cookie para http://127.0.0.1:8080 se o frontend estiver em http://localhost:5173
+app.config['SESSION_COOKIE_DOMAIN'] = 'localhost'
+app.config['SESSION_COOKIE_PATH'] = '/' # Garante que o cookie seja válido para todo o domínio
+# Configuração para SameSite do cookie, pode ajudar em cenários de desenvolvimento
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
+
+RAWG_API_KEY = '7221b0332ccb4921ad5eb4f3da1bddbb' 
+STEAM_API_KEY = '6A3A0276105A093B07C6CF6FC5FEFB2F' 
 RETURN_URL = 'http://localhost:8080/authorize'
 FRONTEND_URL = 'http://localhost:5173'
 
@@ -60,8 +74,12 @@ def authorize():
             player_data = player_response.json()['response']['players'][0]
             print(f"Dados do jogador Steam obtidos: {player_data.get('personaname')}") # Debugging
             
-            # Registrar o usuário Steam (ON CONFLICT DO NOTHING se já existir)
-            registrar_usuario_steam(player_data['personaname'], steam_id)
+            # Extrair o avatar_url
+            avatar_url = player_data.get('avatarfull') # Use 'avatarfull' for the largest avatar image
+            print(f"Avatar URL Steam: {avatar_url}") # Debugging
+
+            # Modificado: Passar avatar_url para a função de registro
+            registrar_usuario_steam(player_data['personaname'], steam_id, avatar_url)
             
             # Buscar o user_id do banco de dados após o registro/atualização
             user_id_from_db = buscar_id_usuario_steam(steam_id) 
@@ -69,14 +87,13 @@ def authorize():
             print(f"Retorno de buscar_id_usuario_steam: {user_id_from_db}") # Debugging: Verifique o que esta função retorna
             
             if user_id_from_db:
-                # user_id_from_db já é o ID, não precisa de mais desestruturação se for um valor direto
                 session['user_id'] = user_id_from_db
                 session['user_name'] = player_data['personaname']
                 session['logged_in_via'] = 'steam'
                 session['steam_id'] = steam_id
-                # Force session to be saved (can help with persistence issues)
+                session.permanent = True # Torna a sessão permanente
                 session.modified = True 
-                print(f"Sessão definida: user_id={session.get('user_id')}, user_name={session.get('user_name')}, logged_in_via={session.get('logged_in_via')}") # Debugging
+                print(f"Sessão definida (após Steam login): user_id={session.get('user_id')}, user_name={session.get('user_name')}, logged_in_via={session.get('logged_in_via')}") # DEBUG CRÍTICO
             else:
                 print(f"Erro: Não foi possível obter user_id do banco de dados para Steam ID: {steam_id}") # Debugging
                 return 'Erro: Falha ao obter ID do usuário após registro/busca.', 500
@@ -110,8 +127,9 @@ def login_email():
         session['user_id'] = user['id']
         session['user_name'] = user['nome']
         session['logged_in_via'] = 'email'
-        session.modified = True # Force session to be saved
-        print(f"Login por email bem-sucedido: user_id={session.get('user_id')}, user_name={session.get('user_name')}") # Debugging
+        session.permanent = True # Torna a sessão permanente
+        session.modified = True 
+        print(f"Login por email bem-sucedido (após email login): user_id={session.get('user_id')}, user_name={session.get('user_name')}") # DEBUG CRÍTICO
         return jsonify({"message": "Login bem-sucedido!", "user": {"id": user['id'], "nome": user['nome']}}), 200
     else:
         print("Tentativa de login por email falhou: Email ou senha incorretos.") # Debugging
@@ -147,6 +165,7 @@ def register():
 
 @app.route('/api/auth_status', methods=['GET'])
 def auth_status():
+    print(f"Rota /api/auth_status acessada. Sessão atual: user_id={session.get('user_id')}, user_name={session.get('user_name')}") # DEBUG CRÍTICO
     if 'user_id' in session:
         print(f"Status de autenticação: Logado como user_id={session.get('user_id')}, user_name={session.get('user_name')}") # Debugging
         return jsonify({
@@ -155,7 +174,7 @@ def auth_status():
             'user_name': session.get('user_name'),
             'logged_in_via': session.get('logged_in_via')
         })
-    print("Status de autenticação: Não logado.") # Debugging
+    print("Status de autenticação: Não logado (user_id não encontrado na sessão).") # Debugging
     return jsonify({'logged_in': False})
 
 @app.route('/api/games', methods=['GET'])
@@ -308,8 +327,9 @@ def top_avaliacoes_route():
     return jsonify(avaliacoes_com_imagens), 200
 
 
-@app.route('/logout', methods=['POST'])
+@app.route('/logout', methods=['POST']) # Mudado para POST, como está no seu App.jsx
 def logout():
+    print(f"Logout iniciado. Antes de limpar a sessão: user_id={session.get('user_id')}, user_name={session.get('user_name')}") # DEBUG CRÍTICO
     session.clear()
     print("Sessão limpa no logout.") # Debugging
     return jsonify({'message': 'Logout realizado com sucesso'}), 200
@@ -317,11 +337,10 @@ def logout():
 # --- ROTAS PARA PERFIL ---
 
 @app.route('/api/users/<int:user_id>/profile', methods=['GET'])
-def get_user_profile():
-    user_id_from_route = request.view_args['user_id']
-    user_data = buscar_usuario_por_id(user_id_from_route)
+def get_user_profile(user_id):
+    user_data = buscar_usuario_por_id(user_id) # Usar o user_id diretamente do argumento da rota
     if user_data:
-        print(f"Perfil do usuário {user_id_from_route} obtido.") # Debugging
+        print(f"Perfil do usuário {user_id} obtido do DB: Nome={user_data.get('nome')}, Bio={user_data.get('bio')}.") # DEBUG
         return jsonify({
             'id': user_data['id'],
             'nome': user_data['nome'],
@@ -329,61 +348,68 @@ def get_user_profile():
             'bio': user_data.get('bio', ''),
             'avatar_url': user_data.get('avatar_url', None)
         }), 200
-    print(f"Usuário {user_id_from_route} não encontrado.") # Debugging
+    print(f"Usuário {user_id} não encontrado no DB.") # Debugging
     return jsonify({'message': 'Usuário não encontrado'}), 404
 
 @app.route('/api/users/<int:user_id>/profile', methods=['PATCH'])
-def update_user_profile():
-    user_id_from_route = request.view_args['user_id']
+def update_user_profile(user_id): # Renomear user_id_from_route para user_id diretamente
+    # Adicionando logs detalhados para depuração da sessão
+    print(f"[{request.method}] /api/users/{user_id}/profile - Início da requisição.")
+    print(f"Conteúdo da sessão no início da requisição: {dict(session)}") # DEBUG CRÍTICO
+
     data = request.json
     new_bio = data.get('bio')
 
     if new_bio is None:
-        print("Erro ao atualizar perfil: Campo bio é obrigatório.") # Debugging
+        print(f"[{request.method}] /api/users/{user_id}/profile - Erro: Campo bio é obrigatório.") # Debugging
         return jsonify({'message': 'Campo bio é obrigatório'}), 400
-
-    if session.get('user_id') != user_id_from_route:
-        print(f"Tentativa de atualização de perfil não autorizada para user {user_id_from_route} por user {session.get('user_id')}.") # Debugging
+    
+    # Validação de autorização: verifica se o user_id da sessão corresponde ao user_id da rota
+    if session.get('user_id') != user_id: # Use user_id diretamente, já é o int da rota
+        print(f"[{request.method}] /api/users/{user_id}/profile - Tentativa de atualização de perfil NÃO AUTORIZADA. User da sessão: {session.get('user_id')}") # Debugging
         return jsonify({'message': 'Não autorizado a editar este perfil'}), 403
 
-    success = atualizar_bio_usuario(user_id_from_route, new_bio)
+    success = atualizar_bio_usuario(user_id, new_bio) # Use user_id diretamente
     if success:
-        print(f"Bio do usuário {user_id_from_route} atualizada com sucesso.") # Debugging
+        print(f"[{request.method}] /api/users/{user_id}/profile - Bio do usuário {user_id} atualizada com sucesso.") # Debugging
         return jsonify({'message': 'Bio atualizada com sucesso'}), 200
-    print(f"Erro ao atualizar bio do usuário {user_id_from_route}.") # Debugging
+    print(f"[{request.method}] /api/users/{user_id}/profile - Erro ao atualizar bio do usuário {user_id}.") # Debugging
     return jsonify({'message': 'Erro ao atualizar bio'}), 500
 
 @app.route('/api/users/<int:user_id>/games', methods=['POST'])
-def add_user_game():
-    user_id_from_route = request.view_args['user_id']
+def add_user_game(user_id): # Renomear user_id_from_route para user_id diretamente
+    # Adicionando logs detalhados para depuração da sessão
+    print(f"[{request.method}] /api/users/{user_id}/games - Início da requisição.")
+    print(f"Conteúdo da sessão no início da requisição: {dict(session)}") # DEBUG CRÍTICO
+
     data = request.json
     nome_jogo = data.get('nome_jogo')
     status = data.get('status')
 
     if not all([nome_jogo, status]):
-        print("Erro ao adicionar jogo: Nome do jogo e status são obrigatórios.") # Debugging
+        print(f"[{request.method}] /api/users/{user_id}/games - Erro: Nome do jogo e status são obrigatórios.") # Debugging
         return jsonify({'message': 'Nome do jogo e status são obrigatórios'}), 400
 
     valid_statuses = ['jogando', 'zerado', 'abandonado']
     if status not in valid_statuses:
-        print(f"Erro ao adicionar jogo: Status inválido '{status}'.") # Debugging
+        print(f"[{request.method}] /api/users/{user_id}/games - Erro: Status inválido '{status}'.") # Debugging
         return jsonify({'message': 'Status inválido. Use "jogando", "zerado" ou "abandonado".'}), 400
 
-    if session.get('user_id') != user_id_from_route:
-        print(f"Tentativa não autorizada de adicionar jogo para user {user_id_from_route} por user {session.get('user_id')}.") # Debugging
+    # Validação de autorização: verifica se o user_id da sessão corresponde ao user_id da rota
+    if session.get('user_id') != user_id: # Use user_id diretamente
+        print(f"[{request.method}] /api/users/{user_id}/games - Tentativa não autorizada de adicionar jogo. User da sessão: {session.get('user_id')}") # Debugging
         return jsonify({'message': 'Não autorizado a adicionar jogos a este perfil'}), 403
 
-    success, message = adicionar_ou_atualizar_jogo_usuario(user_id_from_route, nome_jogo, status)
+    success, message = adicionar_ou_atualizar_jogo_usuario(user_id, nome_jogo, status) # Use user_id diretamente
     if success:
-        print(f"Jogo '{nome_jogo}' para usuário {user_id_from_route}: {message}") # Debugging
+        print(f"[{request.method}] /api/users/{user_id}/games - Jogo '{nome_jogo}' para usuário {user_id}: {message}") # Debugging
         return jsonify({'message': message}), 201 if "adicionado" in message else 200
-    print(f"Erro ao adicionar/atualizar jogo para user {user_id_from_route}: {message}") # Debugging
+    print(f"[{request.method}] /api/users/{user_id}/games - Erro ao adicionar/atualizar jogo para user {user_id}: {message}") # Debugging
     return jsonify({'message': f'Erro: {message}'}), 500
 
 @app.route('/api/users/<int:user_id>/games_by_status', methods=['GET'])
-def get_user_games_by_status_route():
-    user_id_from_route = request.view_args['user_id']
-    user_games_data = listar_jogos_do_usuario_com_status(user_id_from_route)
+def get_user_games_by_status_route(user_id): # Renomear user_id_from_route para user_id
+    user_games_data = listar_jogos_do_usuario_com_status(user_id) # Use user_id diretamente
 
     games_by_status = {
         'jogando': [],
@@ -428,13 +454,12 @@ def get_user_games_by_status_route():
                 games_by_status['zerado'].append(game_info)
             elif game_status == 'abandonado':
                 games_by_status['abandonado'].append(game_info)
-    print(f"Jogos do usuário {user_id_from_route} por status obtidos.") # Debugging
+    print(f"Jogos do usuário {user_id} por status obtidos.") # Debugging
     return jsonify(games_by_status), 200
 
 @app.route('/api/users/<int:user_id>/reviews', methods=['GET'])
-def get_user_reviews_route():
-    user_id_from_route = request.view_args['user_id']
-    user_reviews_data = listar_avaliacoes_do_usuario(user_id_from_route)
+def get_user_reviews_route(user_id): # Renomear user_id_from_route para user_id
+    user_reviews_data = listar_avaliacoes_do_usuario(user_id) # Use user_id diretamente
 
     reviews_with_game_info = []
     for review_record in user_reviews_data:
@@ -469,9 +494,90 @@ def get_user_reviews_route():
             'background_image': background_image
         }
         reviews_with_game_info.append(review_info)
-    print(f"Avaliações do usuário {user_id_from_route} obtidas.") # Debugging
+    print(f"Avaliações do usuário {user_id} obtidas.") # Debugging
     return jsonify(reviews_with_game_info), 200
+
+@app.route('/api/users/<int:user_id>/seguindo', methods=['GET'])
+def get_seguindo(user_id):
+    seguindo = listar_seguindo(user_id)
+    return jsonify(seguindo), 200
+
+@app.route('/api/users/<int:user_id>/seguidores', methods=['GET'])
+def get_seguidores(user_id):
+    seguidores = listar_seguidores(user_id)
+    return jsonify(seguidores), 200
+
+@app.route('/api/follow', methods=['POST'])
+def follow_user():
+    data = request.get_json()
+    seguidor_id = data.get('seguidor_id')
+    seguindo_id = data.get('seguindo_id')
+    if not all([seguidor_id, seguindo_id]):
+        return jsonify({'message': 'IDs obrigatórios'}), 400
+    criar_follow(seguidor_id, seguindo_id)
+    return jsonify({'message': 'Agora você está seguindo esse usuário'}), 200
+
+@app.route('/api/users/search')
+def search_users():
+    query = request.args.get('query')
+    if not query:
+        return jsonify([]), 200
+    usuarios = buscar_usuarios_por_nome(query)
+    return jsonify(usuarios), 200
+
+
+@app.route('/api/users/<int:user_id>/games/<string:nome_jogo>', methods=['DELETE'])
+def remove_user_game(user_id, nome_jogo):
+    # Nota: Usamos session.get('user_id') para segurança, para garantir que apenas
+    # o usuário logado possa remover seus próprios jogos.
+    current_user_id = session.get('user_id')
+    if not current_user_id or current_user_id != user_id:
+        return jsonify({'message': 'Não autorizado a remover este jogo.'}), 403
+
+    # Decodifica o nome do jogo, se ele vier encodado na URL
+    decoded_nome_jogo = unquote(nome_jogo)
+
+    if remover_jogo_usuario(user_id, decoded_nome_jogo):
+        return jsonify({'message': f'Jogo "{decoded_nome_jogo}" removido com sucesso.'}), 200
+    else:
+        return jsonify({'message': f'Falha ao remover jogo "{decoded_nome_jogo}".'}), 500
+
+
+@app.route('/api/users/<int:user_id>/reviews/<int:review_id>', methods=['DELETE'])
+def remove_user_review(user_id, review_id):
+    current_user_id = session.get('user_id')
+    print(f"DEBUG: Tentativa de remover avaliação {review_id} pelo user_id da URL: {user_id}. User_id na sessão: {current_user_id}") # Adicione esta linha
+    if not current_user_id or current_user_id != user_id:
+        return jsonify({'message': 'Não autorizado a remover esta avaliação.'}), 403
+
+    if remover_avaliacao(review_id, user_id):
+        return jsonify({'message': 'Avaliação removida com sucesso.'}), 200
+    else:
+        return jsonify({'message': 'Falha ao remover avaliação ou avaliação não encontrada.'}), 500
+    
+
+@app.route('/api/unfollow', methods=['POST'])
+def unfollow_user():
+    data = request.get_json()
+    seguidor_id = data.get('seguidor_id')
+    seguindo_id = data.get('seguindo_id')
+
+    if not all([seguidor_id, seguindo_id]):
+        return jsonify({'message': 'IDs de seguidor e seguido são obrigatórios'}), 400
+
+    # Certifique-se de que o usuário logado (seguidor_id) é quem está fazendo a requisição
+    current_user_id = session.get('user_id')
+    if not current_user_id or current_user_id != seguidor_id:
+        return jsonify({'message': 'Não autorizado a deixar de seguir esta pessoa.'}), 403
+
+    if remover_follow(seguidor_id, seguindo_id):
+        return jsonify({'message': 'Deixou de seguir com sucesso.'}), 200
+    else:
+        # Retorna 404 se o follow não foi encontrado (talvez já não estivesse seguindo)
+        return jsonify({'message': 'Falha ao deixar de seguir ou follow não encontrado.'}), 404
+
+
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8080)
+    app.run(debug=True, host='localhost', port=8080) 

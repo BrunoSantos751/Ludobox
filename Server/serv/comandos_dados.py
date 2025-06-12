@@ -5,6 +5,22 @@ from datetime import datetime
 
 # ===================== AVALIAÇÕES =====================
 
+def remover_avaliacao(avaliacao_id, user_id):
+    # Incluímos user_id para garantir que apenas o dono da avaliação pode removê-la
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM avaliacoes WHERE avaliacao_id = %s AND user_id = %s", (avaliacao_id, user_id))
+        conn.commit()
+        # Verifica se alguma linha foi afetada para saber se a remoção ocorreu
+        return cursor.rowcount > 0
+    except Exception as e:
+        print(f"Erro ao remover avaliação: {e}")
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
 def inserir_avaliacao(user_id, nota, comentario, nome_jogo):
     conn = get_connection()
     c = conn.cursor()
@@ -96,6 +112,20 @@ def get_user_liked_evaluations(user_id):
 
 # ===================== USERS =====================
 
+
+def buscar_usuarios_por_nome(parte_nome):
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute("""
+        SELECT id, nome, avatar_url
+        FROM users
+        WHERE LOWER(nome) LIKE %s
+        LIMIT 10
+    """, (f'%{parte_nome.lower()}%',))
+    usuarios = c.fetchall()
+    conn.close()
+    return usuarios
+
 def criar_usuario(nome, email, senha, bio='', avatar_url=''):
     conn = get_connection()
     cursor = conn.cursor()
@@ -114,16 +144,24 @@ def registrar_usuario(nome, email, senha):
     conn.close()
     return True
 
-def registrar_usuario_steam(nome, steam_id):
+
+def registrar_usuario_steam(nome, steam_id, avatar_url=None):
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO users (nome, steam_id)
-        VALUES (%s, %s)
-        ON CONFLICT (steam_id) DO NOTHING
-    """, (nome, steam_id))
-    conn.commit()
-    conn.close()
+    try:
+        cursor.execute("""
+            INSERT INTO users (nome, steam_id, avatar_url)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (steam_id) DO UPDATE SET
+                nome = EXCLUDED.nome,
+                avatar_url = EXCLUDED.avatar_url
+        """, (nome, steam_id, avatar_url))
+        conn.commit()
+    except Exception as e:
+        print(f"Erro ao registrar/atualizar usuário Steam: {e}")
+        conn.rollback()
+    finally:
+        conn.close()
 
 def buscar_id_usuario_steam(steam_id):
     conn = get_connection()
@@ -222,7 +260,21 @@ def verificar_jogo_favorito(user_id, game_id):
     conn.close()
     return result['count'] > 0
 
-# NOVA FUNÇÃO (para suportar a rota /api/users/<int:user_id>/games no main.py)
+
+def remover_jogo_usuario(user_id, nome_jogo):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM user_games WHERE user_id = %s AND nome_jogo = %s", (user_id, nome_jogo))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Erro ao remover jogo do usuário: {e}")
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
 def adicionar_ou_atualizar_jogo_usuario(user_id, nome_jogo, status):
     conn = get_connection()
     cursor = conn.cursor()
@@ -244,7 +296,7 @@ def adicionar_ou_atualizar_jogo_usuario(user_id, nome_jogo, status):
     finally:
         conn.close()
 
-# NOVA FUNÇÃO (para suportar a rota /api/users/<int:user_id>/games_by_status no main.py)
+
 def listar_jogos_do_usuario_com_status(user_id):
     conn = get_connection()
     cursor = conn.cursor()
@@ -253,7 +305,7 @@ def listar_jogos_do_usuario_com_status(user_id):
     conn.close()
     return games
 
-# NOVA FUNÇÃO (para suportar a rota /api/users/<int:user_id>/reviews no main.py)
+
 def listar_avaliacoes_do_usuario(user_id):
     conn = get_connection()
     cursor = conn.cursor()

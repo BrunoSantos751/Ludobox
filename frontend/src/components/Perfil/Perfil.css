@@ -27,7 +27,7 @@ body {
   padding: 0 20px;
 }
 
-/* Barra de navegação */
+/* Barra de navegação (top-most nav) */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -56,287 +56,786 @@ body {
 .navbar-item {
   display: flex;
   align-items: center;
-  cursor: pointer;
-  font-size: 14px;
-  color: var(--secondary-text);
-  transition: color 0.3s;
+  color: var(--text-color);
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.3s ease;
 }
 
-.navbar-item:hover, .navbar-item.active {
+.navbar-item:hover {
   color: var(--primary-color);
 }
 
-.navbar-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
+.navbar-item .icon {
   margin-right: 5px;
 }
 
-/* Seção de perfil principal */
-.profile-header {
+/* NOVO: Barra de busca de usuários no topo da página (agora acima do profile-header) */
+.search-users-panel-top {
+  background-color: var(--card-background);
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 30px; /* Space between search bar and profile header */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   display: flex;
-  gap: 30px;
-  margin-bottom: 40px;
+  justify-content: center; /* Centraliza o conteúdo */
+  width: 100%; /* Ensure it spans full width */
 }
 
-.profile-avatar-container {
-  flex-shrink: 0;
+.search-users-panel-top .search-input-group {
+  display: flex;
+  width: 100%; /* Ocupa a largura total do painel */
+  max-width: 600px; /* Limita a largura para melhor estética */
+  gap: 10px;
+}
+
+.search-input-top {
+  flex-grow: 1;
+  padding: 12px;
+  border: 1px solid #333;
+  border-radius: 25px; /* Mais arredondado */
+  background-color: #222;
+  color: var(--text-color);
+  font-size: 1.1em;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-input-top:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 8px rgba(255, 102, 0, 0.5);
+}
+
+.search-button-top {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border: none;
+  padding: 12px 20px;
+  border-radius: 25px; /* Mais arredondado */
+  cursor: pointer;
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.search-button-top:hover {
+  background-color: #E65C00;
+}
+
+
+/* Header do perfil */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  padding: 40px 0;
+  border-bottom: 1px solid #222;
+  margin-bottom: 30px;
 }
 
 .profile-avatar {
-  width: 120px;
-  height: 120px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   object-fit: cover;
+  border: 3px solid var(--primary-color);
+  box-shadow: 0 0 15px rgba(255, 102, 0, 0.5);
 }
 
 .profile-info {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-grow: 1;
 }
 
-.profile-username {
-  font-size: 28px;
-  font-weight: bold;
+.profile-info h1 {
+  font-size: 2.5em;
   margin-bottom: 10px;
+  color: var(--primary-color);
+}
+
+.profile-bio {
+  font-size: 1.1em;
+  color: var(--secondary-text);
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+.edit-bio-button {
+  background-color: var(--card-background);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.edit-bio-button:hover {
+  background-color: var(--primary-color);
+  color: var(--text-color);
 }
 
 .profile-stats {
   display: flex;
-  gap: 30px;
-  margin-bottom: 15px;
+  gap: 25px;
+  font-size: 1em;
+  color: var(--secondary-text);
 }
 
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.stat-value {
-  font-size: 24px;
+.profile-stats .stat-item {
+  background-color: #222;
+  padding: 5px 12px;
+  border-radius: 20px;
   font-weight: bold;
-  color: var(--primary-color);
 }
 
-.stat-label {
-  font-size: 12px;
-  color: var(--secondary-text);
+/* Estilos para tornar os números de seguidores/seguindo clicáveis */
+.profile-stats .stat-item.clickable {
+  cursor: pointer;
+  color: var(--primary-color); /* Para indicar que é clicável */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.profile-bio {
-  font-size: 14px;
-  color: var(--secondary-text);
-  max-width: 500px;
+.profile-stats .stat-item.clickable:hover {
+  background-color: #333;
+  color: var(--text-color);
 }
 
 /* Estatísticas de jogos */
-.game-stats {
+.profile-game-stats {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 50px;
+  justify-content: space-around;
+  background-color: var(--card-background);
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-.game-stat-item {
+.profile-game-stats span {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: var(--primary-color);
   display: flex;
-  flex-direction: column;
   align-items: center;
+  gap: 5px;
+}
+
+.add-game-button {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-game-button:hover {
+  background-color: #E65C00;
+}
+
+
+/* Conteúdo principal do perfil (agora empilhado verticalmente) */
+.profile-content {
+  /* Removed display: flex and gap to stack vertically */
+  margin-top: 30px;
+}
+
+.profile-games-section,
+.profile-reviews-section {
+  background-color: var(--card-background);
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  margin-bottom: 30px; /* Space between sections */
+  width: 100%; /* Take full width */
+}
+
+/* Remove flex-grow from previous versions */
+/* .profile-games-section {
+  flex: 2;
+}
+
+.profile-reviews-section {
   flex: 1;
-}
+} */
 
-.game-stat-value {
-  font-size: 48px;
-  font-weight: bold;
+
+.profile-games-section h2,
+.profile-reviews-section h2 {
   color: var(--primary-color);
-  margin-bottom: 5px;
-}
-
-.game-stat-label {
-  font-size: 12px;
-  color: var(--secondary-text);
-  text-align: center;
-}
-
-/* Seção de jogos por status (antiga favorite-games-section) */
-.section-title {
-  font-size: 24px;
-  font-weight: bold;
   margin-bottom: 20px;
-  text-transform: uppercase;
+  border-bottom: 2px solid #222;
+  padding-bottom: 10px;
+  font-size: 1.8em;
 }
 
-.highlight {
-  color: var(--primary-color);
+.game-status-category h3 {
+  color: var(--text-color);
+  margin-top: 25px;
+  margin-bottom: 15px;
+  font-size: 1.4em;
+  position: relative;
+  padding-left: 15px;
 }
 
-.games-by-status-section { /* Nova classe */
-  margin-bottom: 50px;
+.game-status-category h3::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  background-color: var(--primary-color);
+  border-radius: 50%;
 }
 
-.game-grid { /* Nova classe */
+
+.game-list {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 20px;
 }
 
 .game-card {
-  position: relative;
-  height: 250px;
+  background-color: #222;
+  border-radius: 8px;
   overflow: hidden;
-  border-radius: 8px;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  padding-bottom: 10px;
 }
 
-.game-image {
+.game-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+.game-card img.game-image {
   width: 100%;
-  height: 100%;
+  height: 150px;
   object-fit: cover;
-  transition: transform 0.3s;
-}
-
-.game-card:hover .game-image {
-  transform: scale(1.05);
-}
-
-.game-title-overlay { /* Nova classe para o título */
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  padding: 15px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8) 50%);
-}
-
-.game-title-overlay h3 {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-/* Seção de avaliações */
-.latest-reviews-section {
-  margin-bottom: 50px;
-}
-
-.reviews-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.review-item {
-  display: flex;
-  gap: 15px;
-  background-color: var(--card-background);
-  border-radius: 8px;
-  padding: 15px;
-}
-
-.review-game-image {
-  width: 60px;
-  height: 60px;
-  flex-shrink: 0;
-}
-
-.review-game-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-.review-content {
-  flex-grow: 1;
-}
-
-.review-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  border-bottom: 1px solid #333;
   margin-bottom: 10px;
 }
 
-.review-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
+.game-card span {
+  display: block;
+  font-size: 0.9em;
+  color: var(--text-color);
+  padding: 0 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.review-username {
-  font-weight: bold;
-}
 
-.review-action {
-  color: var(--secondary-text);
-  font-size: 14px;
-}
-
-.review-game-name {
-  color: var(--primary-color);
-  font-weight: bold;
-}
-
-.review-rating {
+/* Avaliações recentes */
+.reviews-list {
   display: flex;
-  gap: 2px;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.star {
+.review-card {
+  background-color: #222;
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+  transition: background-color 0.2s ease;
+}
+
+.review-card:hover {
+  background-color: #333;
+}
+
+.review-card .review-game-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.review-content h4 {
   color: var(--primary-color);
-  font-size: 18px;
+  margin-bottom: 5px;
+  font-size: 1.1em;
 }
 
-.review-comment {
-  font-size: 14px;
+.review-content p {
+  color: var(--secondary-text);
+  font-size: 0.9em;
+  margin-bottom: 5px;
+}
+
+.review-content .review-date {
+  font-size: 0.8em;
+  color: #777;
+}
+
+/* Modal de edição de biografia e adição de jogo */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: var(--card-background);
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8);
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+  position: relative;
+}
+
+.modal-content h2 {
+  color: var(--primary-color);
+  margin-bottom: 25px;
+  font-size: 1.8em;
+}
+
+.modal-content textarea {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #333;
+  border-radius: 5px;
+  background-color: #222;
+  color: var(--text-color);
+  resize: vertical;
+  min-height: 100px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.button-primary,
+.button-secondary {
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.button-primary {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border: none;
+}
+
+.button-primary:hover {
+  background-color: #E65C00;
+}
+
+.button-primary:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.button-secondary {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+}
+
+.button-secondary:hover {
+  background-color: #333;
   color: var(--text-color);
 }
 
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
 
-/* Responsividade */
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-color);
+  font-weight: bold;
+}
+
+.form-group input[type="text"],
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #333;
+  border-radius: 5px;
+  background-color: #222;
+  color: var(--text-color);
+}
+
+.search-input-container {
+  display: flex;
+  gap: 10px;
+}
+
+.search-button {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.search-button:hover {
+  background-color: #E65C00;
+}
+
+.search-results-list {
+  list-style: none;
+  background-color: #222;
+  border: 1px solid #333;
+  border-radius: 5px;
+  margin-top: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover {
+  background-color: #333;
+}
+
+.search-result-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 3px;
+  margin-right: 10px;
+}
+
+.selected-game-info {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #222;
+  border-radius: 5px;
+  color: var(--primary-color);
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Estilos para o painel de seguidores/seguindo (SeguidoresESeguindo.jsx) */
+.seguidores-wrapper {
+  position: relative; /* Needed for absolute positioning of close button */
+  margin: 40px auto; /* Centraliza o wrapper */
+  max-width: 800px; /* Limita a largura do painel */
+}
+
+.seguidores-container {
+  background-color: var(--card-background);
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #222;
+}
+
+.tab-button {
+  background-color: transparent;
+  border: none;
+  padding: 10px 15px;
+  color: var(--secondary-text);
+  font-size: 1.1em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-button.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+  font-weight: bold;
+}
+
+.tab-button:hover:not(.active) {
+  color: var(--text-color);
+}
+
+.tab-content {
+  padding-top: 15px;
+}
+
+.seguidores-container h2.section-title {
+  text-align: center;
+  font-size: 1.5em;
+  margin-bottom: 20px;
+  border-bottom: none; /* Já temos a borda na div.tabs */
+  padding-bottom: 0;
+}
+
+.seguidores-list,
+.seguindo-list,
+.busca-resultados {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.user-card {
+  background-color: #222;
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.user-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+.user-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary-color);
+}
+
+.user-card span {
+  font-weight: bold;
+  color: var(--text-color);
+  flex-grow: 1; /* Permite que o nome ocupe espaço */
+}
+
+.seguir-button, .unfollow-button {
+  background-color: var(--primary-color);
+  border: none;
+  padding: 8px 12px;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+  white-space: nowrap; /* Evita que o texto quebre */
+}
+
+.seguir-button:hover {
+  background-color: #E65C00;
+}
+
+.unfollow-button {
+  background-color: #dc3545; /* Cor para "Deixar de Seguir" */
+}
+
+.unfollow-button:hover {
+  background-color: #c82333;
+}
+
+.busca-usuarios {
+  margin-top: 20px;
+}
+
+/* input e button da busca de usuários dentro do painel */
+.busca-usuarios .search-input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.busca-usuarios .search-input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #333;
+  border-radius: 5px;
+  background-color: #222;
+  color: var(--text-color);
+  font-size: 1em;
+}
+
+.busca-usuarios .search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 5px rgba(255, 102, 0, 0.5);
+}
+
+.busca-usuarios .search-button {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.busca-usuarios .search-button:hover {
+  background-color: #E65C00;
+}
+
+
+.no-results-message {
+  color: var(--secondary-text);
+  text-align: center;
+  padding: 15px;
+  background-color: #222;
+  border-radius: 8px;
+  grid-column: 1 / -1; /* Ocupa todas as colunas no grid */
+}
+
+/* NOVO: Botão de fechar para o painel de seguidores/seguindo */
+.close-follow-panel-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: var(--secondary-text);
+  font-size: 1.5em;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.close-follow-panel-button:hover {
+  color: var(--primary-color);
+}
+
+
+/* Responsividade (adaptada) */
 @media (max-width: 768px) {
   .profile-header {
     flex-direction: column;
-    align-items: center;
     text-align: center;
   }
-  
+
   .profile-info {
-    align-items: center;
+    text-align: center;
   }
-  
-  .game-stats {
+
+  .profile-stats {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .profile-game-stats {
     flex-direction: column;
-    gap: 30px;
+    gap: 15px;
     align-items: center;
   }
-  
-  .game-grid { /* Usar nova classe */
-    grid-template-columns: repeat(2, 1fr);
+
+  /* .profile-content no longer has flex, so no need for flex-direction: column here */
+
+  .game-list {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+
+  .seguidores-list,
+  .seguindo-list,
+  .busca-resultados {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  /* Ajustes para a nova barra de busca no topo */
+  .search-users-panel-top .search-input-group {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .search-input-top, .search-button-top {
+    width: 100%;
+  }
+
+  .tab-button {
+    flex-grow: 1; /* Faz os botões das abas ocuparem o espaço igualmente */
   }
 }
 
 @media (max-width: 480px) {
-  .navbar-menu {
+  .profile-header {
+    padding: 20px 0;
+  }
+
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+  }
+
+  .profile-info h1 {
+    font-size: 2em;
+  }
+
+  .edit-bio-button,
+  .add-game-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .modal-content {
+    padding: 20px;
+  }
+
+  .modal-buttons {
+    flex-direction: column;
     gap: 10px;
   }
-  
-  .navbar-item {
-    font-size: 12px;
+
+  .button-primary,
+  .button-secondary {
+    width: 100%;
   }
-  
-  .profile-stats {
-    gap: 15px;
+
+  .user-card {
+    flex-direction: column;
+    text-align: center;
   }
-  
-  .game-grid { /* Usar nova classe */
-    grid-template-columns: 1fr;
-  }
-  
-  .game-stat-value {
-    font-size: 36px;
-  }
-  
-  .section-title {
-    font-size: 20px;
+
+  .user-avatar {
+    margin-bottom: 10px;
   }
 }
