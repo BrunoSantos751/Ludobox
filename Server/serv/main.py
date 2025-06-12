@@ -15,11 +15,8 @@ app.secret_key = 'Ludobox' # Mantenha esta chave secreta e forte em produção
 
 # Configuração para sessões permanentes
 app.permanent_session_lifetime = timedelta(days=7) # Exemplo: sessão dura 7 dias
-# Força o domínio do cookie de sessão para 'localhost'
-# Isso é crucial para que o navegador envie o cookie para http://127.0.0.1:8080 se o frontend estiver em http://localhost:5173
 app.config['SESSION_COOKIE_DOMAIN'] = 'localhost'
-app.config['SESSION_COOKIE_PATH'] = '/' # Garante que o cookie seja válido para todo o domínio
-# Configuração para SameSite do cookie, pode ajudar em cenários de desenvolvimento
+app.config['SESSION_COOKIE_PATH'] = '/' 
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 

@@ -1,3 +1,7 @@
 Flask
+psycopg2-binary
+python-dotenv
 requests
-Werkzeug
+flask-cors
+werkzeug
+gunicorn
