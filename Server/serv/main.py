@@ -7,8 +7,6 @@ from comandos_dados import * # Importa todas as funções de interação com o D
 from flask_cors import CORS
 from datetime import timedelta # Importar timedelta
 from urllib.parse import unquote
-from dotenv import load_dotenv
-load_dotenv()
 
 
 
