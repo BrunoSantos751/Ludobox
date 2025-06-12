@@ -67,7 +67,7 @@ def authorize():
         if user_id:
             # user_id vindo do banco de dados (provavelmente um dicionário)
             # user_id['id'] é o correto se estiver usando RealDictCursor
-            session['user_id'] = user_id['id'] 
+            session['user_id'] = user_id
             session['user_name'] = player_data['personaname']
             session['logged_in_via'] = 'steam'
     else:
