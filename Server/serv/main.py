@@ -19,9 +19,10 @@ app.secret_key = 'Ludobox' # Mantenha esta chave secreta e forte em produção
 
 # Configuração para sessões permanentes
 app.permanent_session_lifetime = timedelta(days=7) # Exemplo: sessão dura 7 dias
-app.config['SESSION_COOKIE_DOMAIN'] = 'localhost'
-app.config['SESSION_COOKIE_PATH'] = '/' 
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_PATH'] = '/'
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'  
+app.config['SESSION_COOKIE_SECURE'] = True      
+
 
 
 RAWG_API_KEY = '7221b0332ccb4921ad5eb4f3da1bddbb' 
