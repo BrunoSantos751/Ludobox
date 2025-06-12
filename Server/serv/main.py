@@ -41,7 +41,7 @@ def login():
         "?openid.ns=http://specs.openid.net/auth/2.0"
         "&openid.mode=checkid_setup"
         f"&openid.return_to={RETURN_URL}"
-        "&openid.realm=http://localhost:8080/"
+        "&openid.realm=https://ludobox.onrender.com/"
         "&openid.identity=http://specs.openid.net/auth/2.0/identifier_select"
         "&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select"
     )
