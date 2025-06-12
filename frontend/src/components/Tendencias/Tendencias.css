@@ -48,10 +48,13 @@
   flex-wrap: wrap;
 }
 
-.tendencias-comentario-pfp img{
+.tendencias-comentario-pfp{
     width: 40px;
     height: 40px;
-    border-radius: 100%;
+}
+
+.tendencias-comentario-pfp>img{
+  border-radius: 100%;
 }
 
 .comentario-header {
