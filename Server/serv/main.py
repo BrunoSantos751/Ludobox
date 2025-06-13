@@ -71,12 +71,11 @@ def authorize():
             session['user_id'] = user_id
             session['user_name'] = player_data['personaname']
             session['logged_in_via'] = 'steam'
-            token = session.get('user_id')
             
     else:
         return 'Erro ao extrair Steam ID.'
     
-    return redirect(f"{FRONTEND_URL}?token={token}")
+    return redirect(FRONTEND_URL)
 
 
 @app.route('/login_email', methods=['POST'])
@@ -86,14 +85,21 @@ def login_email():
     password = data.get('password')
 
     if not email or not password:
+        print("Login por email falhou: Email e senha são obrigatórios.") # Debugging
         return jsonify({"message": "Email e senha são obrigatórios."}), 400
 
     user = buscar_usuario_por_email(email)
 
     if user and check_password_hash(user['senha'], password):
-        token = str(user['id'])  # Usamos o ID como token simples
-        return redirect(f"{FRONTEND_URL}?token={token}")
+        session['user_id'] = user['id']
+        session['user_name'] = user['nome']
+        session['logged_in_via'] = 'email'
+        session.permanent = True # Torna a sessão permanente
+        session.modified = True 
+        print(f"Login por email bem-sucedido (após email login): user_id={session.get('user_id')}, user_name={session.get('user_name')}") # DEBUG CRÍTICO
+        return jsonify({"message": "Login bem-sucedido!", "user": {"id": user['id'], "nome": user['nome']}}), 200
     else:
+        print("Tentativa de login por email falhou: Email ou senha incorretos.") # Debugging
         return jsonify({"message": "Email ou senha incorretos."}), 401
 
 @app.route('/register', methods=['POST'])
@@ -124,31 +130,18 @@ def register():
         print("Erro ao registrar usuário.") # Debugging
         return jsonify({"message": "Erro ao registrar usuário."}), 500
 
-@app.route('/api/auth_status', methods=['POST', 'GET'])
+@app.route('/api/auth_status', methods=['GET'])
 def auth_status():
-    data = request.get_json(silent=True) or {}
-    token = data.get('token')
-
-    if token:
-        user_id = int(token)
-        user = buscar_usuario_por_id(user_id)
-        if user:
-            return jsonify({
-                'logged_in': True,
-                'user_id': user_id,
-                'user_name': user['nome'],
-                'logged_in_via': 'steam'
-            })
-    
-    # Fallback para verificar por sessão se não veio token
+    print(f"Rota /api/auth_status acessada. Sessão atual: user_id={session.get('user_id')}, user_name={session.get('user_name')}") # DEBUG CRÍTICO
     if 'user_id' in session:
+        print(f"Status de autenticação: Logado como user_id={session.get('user_id')}, user_name={session.get('user_name')}") # Debugging
         return jsonify({
             'logged_in': True,
             'user_id': session.get('user_id'),
             'user_name': session.get('user_name'),
             'logged_in_via': session.get('logged_in_via')
         })
-
+    print("Status de autenticação: Não logado (user_id não encontrado na sessão).") # Debugging
     return jsonify({'logged_in': False})
 
 @app.route('/api/games', methods=['GET'])

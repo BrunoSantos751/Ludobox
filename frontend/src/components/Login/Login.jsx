@@ -39,37 +39,31 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerMessage('');
-  
+
     if (validateForm()) {
       setLoading(true);
-  
+
       try {
         const response = await fetch('https://ludobox.onrender.com/login_email', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({
             email: formData.email,
             password: formData.senha,
           }),
-          redirect: 'follow'
         });
-  
-        // Se o backend redirecionar para a URL com ?token=...
-        if (response.redirected) {
-          window.location.href = response.url;
-          return;
-        }
-  
+
         const data = await response.json();
-  
+
         if (response.ok) {
           setFormData({ email: '', senha: '' });
           setErrors({});
           window.location.href = "/";
         } else {
-          setServerMessage(data.message || "Erro desconhecido ao tentar entrar.");
+          setServerMessage(data.message);
         }
       } catch (error) {
         console.error('Erro na requisição:', error);
@@ -79,7 +73,6 @@ function Login() {
       }
     }
   };
-  
 
   return (
     <div className="login-container">
