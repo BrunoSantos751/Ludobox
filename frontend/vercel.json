@@ -1,6 +1,28 @@
 {
-    "rewrites": [
-      { "source": "/(.*)", "destination": "/" }
-    ]
-  }
-  
+  "rewrites": [
+    {
+      "source": "/api/:match*",
+      "destination": "https://ludobox.onrender.com/api/:match*"
+    },
+    {
+      "source": "/logout",
+      "destination": "https://ludobox.onrender.com/logout"
+    },
+    {
+      "source": "/login_email",
+      "destination": "https://ludobox.onrender.com/login_email"
+    },
+    {
+      "source": "/register",
+      "destination": "https://ludobox.onrender.com/register"
+    },
+    {
+      "source": "/login",
+      "destination": "https://ludobox.onrender.com/login"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ]
+}

@@ -13,7 +13,7 @@ export default function Navbar({ isLoggedIn, userName, onLogout }) {
     e.preventDefault(); // Impede o comportamento padrão do link
 
     try {
-      const response = await fetch("https://ludobox.onrender.com/logout", {
+      const response = await fetch("/logout", {
         method: "POST",
         credentials: "include" // Importante para enviar cookies de sessão
       });
@@ -75,7 +75,7 @@ export default function Navbar({ isLoggedIn, userName, onLogout }) {
             <>
               {/* Botão de Entrar com Steam se não logado */}
               <li className="nav-item login-steam">
-                <a href="https://ludobox.onrender.com/login" onClick={closeMobileMenu} className="nav-links-mobile login-steam">
+                <a href="/login" onClick={closeMobileMenu} className="nav-links-mobile login-steam">
                   <img src={steam} alt="Steam" />
                   Entrar com a Steam
                 </a>
