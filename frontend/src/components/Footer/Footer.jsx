@@ -12,9 +12,10 @@ export default function Footer(){
                 <div className="sobre">
                     <p>Sobre nós:</p>
                     <ul>
-                        <li><a href="/sobre">Sobre o ludobox</a></li>
-                        <li><a href="/time">Nosso time</a></li>
-                        <li><a href="/suporte">Suporte</a></li>
+                    <li><a href="https://github.com/BrunoSantos751/Ludobox" target="_blank" rel="noopener noreferrer">Sobre o ludobox</a></li>
+                    <li><a href="https://github.com/BrunoSantos751/Ludobox" target="_blank" rel="noopener noreferrer">Nosso time</a></li>
+                    <li><a href="https://github.com/BrunoSantos751/Ludobox" target="_blank" rel="noopener noreferrer">Suporte</a></li>
+
                     </ul>
                 </div>
                 <div className="contato">
