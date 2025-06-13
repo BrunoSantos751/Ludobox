@@ -10,7 +10,7 @@ export default function Footer(){
                     <p>LUDOBOX, explore e compartilhe sua paixão por videogames com a comunidade gamer.</p>
                 </div>
                 <div className="sobre">
-                    <p>Sobre nós</p>:
+                    <p>Sobre nós:</p>
                     <ul>
                         <li><a href="/sobre">Sobre o ludobox</a></li>
                         <li><a href="/time">Nosso time</a></li>
