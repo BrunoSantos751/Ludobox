@@ -133,20 +133,20 @@
         align-items: center;
         justify-content: center;
         gap: 0px;
-        transform: translateX(100%); 
+        transform: translateX(100%);
         opacity: 0;
+        pointer-events: none; /* impede cliques quando oculto */
         transition: transform 0.5s ease, opacity 0.5s ease;
         margin-left: 0px;
         display: flex;
-        z-index: 1000; 
-    }
-
-
-    .nav-menu.active {
-    transform: translateX(0); 
-    opacity: 1;
-    }
-
+        z-index: 1000;
+      }
+      
+      .nav-menu.active {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto; /* permite cliques quando visível */
+      }
   
     .nav-item {
         display: flex;
