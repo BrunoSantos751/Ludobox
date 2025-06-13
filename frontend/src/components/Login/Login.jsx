@@ -44,7 +44,7 @@ function Login() {
       setLoading(true);
 
       try {
-        const response = await fetch('https://ludobox.onrender.com/login_email', {
+        const response = await fetch('/login_email', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

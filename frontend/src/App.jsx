@@ -22,9 +22,36 @@ function App() {
 
   // Função para verificar o status de autenticação do backend com re-tentativas e persistência
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
     let attempts = 0;
     const MAX_ATTEMPTS = 5; // Número máximo de tentativas de verificar o login
     const RETRY_DELAY = 150; // Atraso entre as tentativas em milissegundos
+
+
+    if (token) {
+      // Envie esse token para backend para validar
+      fetch('/api/auth_status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include', // Só se ainda for usar cookies
+        body: JSON.stringify({ token }) // ou envie por header, como Authorization
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.logged_in) {
+          setIsLoggedIn(true);
+          setUserName(data.user_name);
+          setUserId(data.user_id);
+          // Remove o token da URL
+          window.history.replaceState({}, document.title, '/');
+        }
+      });
+    }
+    
+
 
     const checkAuthStatus = async () => {
       setIsLoading(true); // Ativa o estado de carregamento
