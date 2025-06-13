@@ -22,6 +22,7 @@
 - Avaliar jogos
 - Acesso ao catálogo de jogos
 - Filtrar jogos
+- Entrar com a STEAM
 
 ## 🛠️ Como rodar o projeto
 
