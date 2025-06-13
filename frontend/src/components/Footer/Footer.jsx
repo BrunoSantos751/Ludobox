@@ -7,7 +7,7 @@ export default function Footer(){
             <div className="info">
                 <div className="descricao">
                     <a href="/"><img src={logo} alt="Logo Ludobox" /></a>
-                    <p>LUDOBOX, explore e compartilhe dua paixão por videogames com a comunidade gamer.</p>
+                    <p>LUDOBOX, explore e compartilhe sua paixão por videogames com a comunidade gamer.</p>
                 </div>
                 <div className="sobre">
                     <p>Sobre nós</p>:
