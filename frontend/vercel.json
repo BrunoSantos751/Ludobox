@@ -1,18 +1,6 @@
 {
   "rewrites": [
-    {
-      "source": "/api/:match*",
-      "destination": "https://ludobox.onrender.com/api/:match*"
-    },
-    
-    {
-      "source": "/login_email",
-      "destination": "https://ludobox.onrender.com/login_email"
-    },
-
-    {
-      "source": "/(.*)",
-      "destination": "/"
-    }
+    { "source": "/(.*)", "destination": "/" }
   ]
 }
+

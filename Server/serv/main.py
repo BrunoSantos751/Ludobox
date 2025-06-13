@@ -86,21 +86,14 @@ def login_email():
     password = data.get('password')
 
     if not email or not password:
-        print("Login por email falhou: Email e senha são obrigatórios.") # Debugging
         return jsonify({"message": "Email e senha são obrigatórios."}), 400
 
     user = buscar_usuario_por_email(email)
 
     if user and check_password_hash(user['senha'], password):
-        session['user_id'] = user['id']
-        session['user_name'] = user['nome']
-        session['logged_in_via'] = 'email'
-        session.permanent = True # Torna a sessão permanente
-        session.modified = True 
-        print(f"Login por email bem-sucedido (após email login): user_id={session.get('user_id')}, user_name={session.get('user_name')}") # DEBUG CRÍTICO
-        return jsonify({"message": "Login bem-sucedido!", "user": {"id": user['id'], "nome": user['nome']}}), 200
+        token = str(user['id'])  # Usamos o ID como token simples
+        return redirect(f"{FRONTEND_URL}?token={token}")
     else:
-        print("Tentativa de login por email falhou: Email ou senha incorretos.") # Debugging
         return jsonify({"message": "Email ou senha incorretos."}), 401
 
 @app.route('/register', methods=['POST'])
