@@ -1,27 +1,17 @@
-from flask import Flask, redirect, request, session, url_for, render_template, jsonify
+from flask import Flask, redirect, request, jsonify
 import requests
 import re
 from urllib.parse import quote as encodeURIComponent
 from werkzeug.security import generate_password_hash, check_password_hash
 from comandos_dados import * # Importa todas as funções de interação com o DB
 from flask_cors import CORS
-from datetime import timedelta # Importar timedelta
 from urllib.parse import unquote
-import traceback 
-
-
-
+import traceback
+from jwt_auth import generate_token, token_required, optional_token, get_current_user
 
 app = Flask(__name__)
 # Configuração de CORS para permitir requisições do frontend
-CORS(app, supports_credentials=True, origins=['https://trabalho-engenharia-de-software-phi.vercel.app'])
-app.secret_key = 'Ludobox' # Mantenha esta chave secreta e forte em produção
-
-# Configuração para sessões permanentes
-app.permanent_session_lifetime = timedelta(days=7) # Exemplo: sessão dura 7 dias
-app.config['SESSION_COOKIE_PATH'] = '/'
-app.config['SESSION_COOKIE_SAMESITE'] = 'None'  
-app.config['SESSION_COOKIE_SECURE'] = True      
+CORS(app, origins=['https://trabalho-engenharia-de-software-phi.vercel.app', 'http://localhost:5173', 'http://localhost:3000'])      
 
 
 
@@ -51,31 +41,33 @@ def login():
 def authorize():
     openid_url = request.args.get('openid.claimed_id')
     if not openid_url:
-        return 'Erro: URL inválida.'
+        return 'Erro: URL inválida.', 400
 
     steam_id_match = re.search(r'/openid/id/(\d+)', openid_url)
     if steam_id_match:
         steam_id = steam_id_match.group(1)
-        session['steam_id'] = steam_id
         player_profile_url = f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={STEAM_API_KEY}&steamids={steam_id}"
         player_response = requests.get(player_profile_url)
         player_data = player_response.json()['response']['players'][0]
         
-        # Adicionar o avatar_url à sessão e passá-lo para a função de registro
+        # Adicionar o avatar_url e passá-lo para a função de registro
         avatar_url = player_data.get('avatarfull') # Usando o avatar completo
         
-        # Estas funções já interagem com o PostgreSQL via db.py
-        registrar_usuario_steam(player_data['personaname'], steam_id, avatar_url) # <--- AQUI A MUDANÇA
+        # Registrar ou atualizar usuário Steam
+        registrar_usuario_steam(player_data['personaname'], steam_id, avatar_url)
         user_id = buscar_id_usuario_steam(steam_id)
+        
         if user_id:
-            session['user_id'] = user_id
-            session['user_name'] = player_data['personaname']
-            session['logged_in_via'] = 'steam'
+            # Gerar token JWT
+            token = generate_token(user_id, player_data['personaname'], 'steam')
             
+            # Redirecionar para o frontend com o token na URL (ou usar outro método)
+            # Opção 1: Passar token na URL (menos seguro, mas funciona para OAuth)
+            return redirect(f"{FRONTEND_URL}?token={token}&login=steam")
+        else:
+            return 'Erro ao obter ID do usuário.', 500
     else:
-        return 'Erro ao extrair Steam ID.'
-    
-    return redirect(FRONTEND_URL)
+        return 'Erro ao extrair Steam ID.', 400
 
 
 @app.route('/login_email', methods=['POST'])
@@ -85,21 +77,27 @@ def login_email():
     password = data.get('password')
 
     if not email or not password:
-        print("Login por email falhou: Email e senha são obrigatórios.") # Debugging
+        print("Login por email falhou: Email e senha são obrigatórios.")
         return jsonify({"message": "Email e senha são obrigatórios."}), 400
 
     user = buscar_usuario_por_email(email)
 
     if user and check_password_hash(user['senha'], password):
-        session['user_id'] = user['id']
-        session['user_name'] = user['nome']
-        session['logged_in_via'] = 'email'
-        session.permanent = True # Torna a sessão permanente
-        session.modified = True 
-        print(f"Login por email bem-sucedido (após email login): user_id={session.get('user_id')}, user_name={session.get('user_name')}") # DEBUG CRÍTICO
-        return jsonify({"message": "Login bem-sucedido!", "user": {"id": user['id'], "nome": user['nome']}}), 200
+        # Gerar token JWT
+        token = generate_token(user['id'], user['nome'], 'email')
+        print(f"Login por email bem-sucedido: user_id={user['id']}, user_name={user['nome']}")
+        return jsonify({
+            "message": "Login bem-sucedido!",
+            "token": token,
+            "user": {
+                "id": user['id'],
+                "nome": user['nome'],
+                "email": user.get('email'),
+                "avatar_url": user.get('avatar_url')
+            }
+        }), 200
     else:
-        print("Tentativa de login por email falhou: Email ou senha incorretos.") # Debugging
+        print("Tentativa de login por email falhou: Email ou senha incorretos.")
         return jsonify({"message": "Email ou senha incorretos."}), 401
 
 @app.route('/register', methods=['POST'])
@@ -111,37 +109,55 @@ def register():
     password = data.get('password')
     
     if not nome or not email or not password:
-        print("Registro falhou: Dados incompletos.") # Debugging
+        print("Registro falhou: Dados incompletos.")
         return jsonify({"message": "Dados incompletos."}), 400
     
     hashed_password = generate_password_hash(password)
     
     existing_user = buscar_usuario_por_email(email)
     if existing_user:
-        print(f"Registro falhou: Email {email} já cadastrado.") # Debugging
+        print(f"Registro falhou: Email {email} já cadastrado.")
         return jsonify({"message": "Email já cadastrado."}), 400
 
     success = registrar_usuario(nome, email, hashed_password)
     
     if success:
-        print(f"Usuário {nome} registrado com sucesso!") # Debugging
-        return jsonify({"message": "Usuário registrado com sucesso!"}), 201
+        # Buscar o usuário recém-criado para obter o ID
+        new_user = buscar_usuario_por_email(email)
+        if new_user:
+            # Gerar token JWT automaticamente após registro
+            token = generate_token(new_user['id'], new_user['nome'], 'email')
+            print(f"Usuário {nome} registrado com sucesso!")
+            return jsonify({
+                "message": "Usuário registrado com sucesso!",
+                "token": token,
+                "user": {
+                    "id": new_user['id'],
+                    "nome": new_user['nome'],
+                    "email": new_user.get('email')
+                }
+            }), 201
+        else:
+            return jsonify({"message": "Usuário registrado, mas erro ao gerar token."}), 201
     else:
-        print("Erro ao registrar usuário.") # Debugging
+        print("Erro ao registrar usuário.")
         return jsonify({"message": "Erro ao registrar usuário."}), 500
 
 @app.route('/api/auth_status', methods=['GET'])
+@optional_token
 def auth_status():
-    print(f"Rota /api/auth_status acessada. Sessão atual: user_id={session.get('user_id')}, user_name={session.get('user_name')}") # DEBUG CRÍTICO
-    if 'user_id' in session:
-        print(f"Status de autenticação: Logado como user_id={session.get('user_id')}, user_name={session.get('user_name')}") # Debugging
+    user = get_current_user()
+    
+    if user:
+        print(f"Status de autenticação: Logado como user_id={user['user_id']}, user_name={user['user_name']}")
         return jsonify({
             'logged_in': True,
-            'user_id': session.get('user_id'),
-            'user_name': session.get('user_name'),
-            'logged_in_via': session.get('logged_in_via')
+            'user_id': user['user_id'],
+            'user_name': user['user_name'],
+            'logged_in_via': user.get('logged_in_via', 'email')
         })
-    print("Status de autenticação: Não logado (user_id não encontrado na sessão).") # Debugging
+    
+    print("Status de autenticação: Não logado (token não fornecido ou inválido).")
     return jsonify({'logged_in': False})
 
 @app.route('/api/games', methods=['GET'])
@@ -190,19 +206,22 @@ def get_games():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/avaliacoes', methods=['POST'])
+@token_required
 def enviar_avaliacao():
+    # Obter user_id do token JWT
+    user_id = request.current_user['user_id']
+    
     data = request.json
-    user_id = data.get('user_id')
     nota = data.get('nota')
     comentario = data.get('comentario')
     nome_jogo = data.get('nome_jogo')
 
-    if not all([user_id, nota, comentario, nome_jogo]):
-        print("Erro ao enviar avaliação: Dados incompletos.") # Debugging
+    if not all([nota, comentario, nome_jogo]):
+        print("Erro ao enviar avaliação: Dados incompletos.")
         return jsonify({'erro': 'Dados incompletos'}), 400
 
     avaliacao_id = inserir_avaliacao(user_id, nota, comentario, nome_jogo)
-    print(f"Avaliação {avaliacao_id} enviada com sucesso.") # Debugging
+    print(f"Avaliação {avaliacao_id} enviada com sucesso pelo usuário {user_id}.")
     return jsonify({'mensagem': 'Avaliação enviada com sucesso', 'avaliacao_id': avaliacao_id}), 201
 
 
@@ -230,38 +249,41 @@ def descurtir_avaliacao_route():
 
 
 @app.route('/avaliacoes/toggle_like', methods=['POST'])
+@token_required
 def toggle_avaliacao_like_route():
+    # Obter user_id do token JWT
+    user_id = request.current_user['user_id']
+    
     data = request.json
     avaliacao_id = data.get('avaliacao_id')
-    user_id = data.get('user_id')
 
-    if not all([avaliacao_id, user_id]):
-        print("Erro ao alternar like: ID da avaliação e ID do usuário são obrigatórios.") # Debugging
-        return jsonify({'erro': 'ID da avaliação e ID do usuário são obrigatórios'}), 400
+    if not avaliacao_id:
+        print("Erro ao alternar like: ID da avaliação é obrigatório.")
+        return jsonify({'erro': 'ID da avaliação é obrigatório'}), 400
 
     try:
         avaliacao_id_int = int(avaliacao_id)
         user_id_int = int(user_id)
         mensagem = toggle_like_avaliacao(user_id_int, avaliacao_id_int)
-        print(f"Alternar like para avaliacao_id={avaliacao_id_int}, user_id={user_id_int}: {mensagem}") # Debugging
+        print(f"Alternar like para avaliacao_id={avaliacao_id_int}, user_id={user_id_int}: {mensagem}")
         return jsonify({'mensagem': mensagem}), 200
     except Exception as e:
-        print(f"Erro ao alternar like no main.py: {e}") # Debugging
+        print(f"Erro ao alternar like no main.py: {e}")
         return jsonify({'erro': f'Erro interno ao processar o like/unlike: {e}'}), 500
 
 @app.route('/api/user_likes', methods=['GET'])
+@token_required
 def get_user_likes_route():
-    user_id = request.args.get('user_id')
-    if not user_id:
-        print("Erro ao buscar likes do usuário: ID do usuário é obrigatório.") # Debugging
-        return jsonify({'erro': 'ID do usuário é obrigatório'}), 400
+    # Obter user_id do token JWT
+    user_id = request.current_user['user_id']
+    
     try:
         user_id_int = int(user_id)
         liked_ids = get_user_liked_evaluations(user_id_int)
-        print(f"Likes do usuário {user_id_int} obtidos: {liked_ids}") # Debugging
+        print(f"Likes do usuário {user_id_int} obtidos: {liked_ids}")
         return jsonify([{"avaliacao_id": aid} for aid in liked_ids]), 200
     except Exception as e:
-        print(f"Erro ao buscar likes do usuário no main.py: {e}") # Debugging
+        print(f"Erro ao buscar likes do usuário no main.py: {e}")
         return jsonify({'erro': f'Erro interno ao buscar likes do usuário: {e}'}), 500
 
 
@@ -294,11 +316,12 @@ def top_avaliacoes_route():
     return jsonify(avaliacoes_com_imagens), 200
 
 
-@app.route('/logout', methods=['POST']) # Mudado para POST, como está no seu App.jsx
+@app.route('/logout', methods=['POST'])
+@optional_token
 def logout():
-    print(f"Logout iniciado. Antes de limpar a sessão: user_id={session.get('user_id')}, user_name={session.get('user_name')}") # DEBUG CRÍTICO
-    session.clear()
-    print("Sessão limpa no logout.") # Debugging
+    # Com JWT, o logout é feito no frontend removendo o token
+    # Não há necessidade de invalidar no servidor (a menos que use blacklist)
+    print("Logout solicitado.")
     return jsonify({'message': 'Logout realizado com sucesso'}), 200
 
 # --- ROTAS PARA PERFIL ---
@@ -319,59 +342,63 @@ def get_user_profile(user_id):
     return jsonify({'message': 'Usuário não encontrado'}), 404
 
 @app.route('/api/users/<int:user_id>/profile', methods=['PATCH'])
-def update_user_profile(user_id): # Renomear user_id_from_route para user_id diretamente
-    # Adicionando logs detalhados para depuração da sessão
+@token_required
+def update_user_profile(user_id):
+    # Obter user_id do token JWT
+    current_user_id = request.current_user['user_id']
+    
     print(f"[{request.method}] /api/users/{user_id}/profile - Início da requisição.")
-    print(f"Conteúdo da sessão no início da requisição: {dict(session)}") # DEBUG CRÍTICO
 
     data = request.json
     new_bio = data.get('bio')
 
     if new_bio is None:
-        print(f"[{request.method}] /api/users/{user_id}/profile - Erro: Campo bio é obrigatório.") # Debugging
+        print(f"[{request.method}] /api/users/{user_id}/profile - Erro: Campo bio é obrigatório.")
         return jsonify({'message': 'Campo bio é obrigatório'}), 400
     
-    # Validação de autorização: verifica se o user_id da sessão corresponde ao user_id da rota
-    if session.get('user_id') != user_id: # Use user_id diretamente, já é o int da rota
-        print(f"[{request.method}] /api/users/{user_id}/profile - Tentativa de atualização de perfil NÃO AUTORIZADA. User da sessão: {session.get('user_id')}") # Debugging
+    # Validação de autorização: verifica se o user_id do token corresponde ao user_id da rota
+    if current_user_id != user_id:
+        print(f"[{request.method}] /api/users/{user_id}/profile - Tentativa de atualização de perfil NÃO AUTORIZADA. User do token: {current_user_id}")
         return jsonify({'message': 'Não autorizado a editar este perfil'}), 403
 
-    success = atualizar_bio_usuario(user_id, new_bio) # Use user_id diretamente
+    success = atualizar_bio_usuario(user_id, new_bio)
     if success:
-        print(f"[{request.method}] /api/users/{user_id}/profile - Bio do usuário {user_id} atualizada com sucesso.") # Debugging
+        print(f"[{request.method}] /api/users/{user_id}/profile - Bio do usuário {user_id} atualizada com sucesso.")
         return jsonify({'message': 'Bio atualizada com sucesso'}), 200
-    print(f"[{request.method}] /api/users/{user_id}/profile - Erro ao atualizar bio do usuário {user_id}.") # Debugging
+    print(f"[{request.method}] /api/users/{user_id}/profile - Erro ao atualizar bio do usuário {user_id}.")
     return jsonify({'message': 'Erro ao atualizar bio'}), 500
 
 @app.route('/api/users/<int:user_id>/games', methods=['POST'])
-def add_user_game(user_id): # Renomear user_id_from_route para user_id diretamente
-    # Adicionando logs detalhados para depuração da sessão
+@token_required
+def add_user_game(user_id):
+    # Obter user_id do token JWT
+    current_user_id = request.current_user['user_id']
+    
     print(f"[{request.method}] /api/users/{user_id}/games - Início da requisição.")
-    print(f"Conteúdo da sessão no início da requisição: {dict(session)}") # DEBUG CRÍTICO
 
     data = request.json
     nome_jogo = data.get('nome_jogo')
     status = data.get('status')
 
     if not all([nome_jogo, status]):
-        print(f"[{request.method}] /api/users/{user_id}/games - Erro: Nome do jogo e status são obrigatórios.") # Debugging
+        print(f"[{request.method}] /api/users/{user_id}/games - Erro: Nome do jogo e status são obrigatórios.")
         return jsonify({'message': 'Nome do jogo e status são obrigatórios'}), 400
 
     valid_statuses = ['jogando', 'zerado', 'abandonado']
     if status not in valid_statuses:
-        print(f"[{request.method}] /api/users/{user_id}/games - Erro: Status inválido '{status}'.") # Debugging
+        print(f"[{request.method}] /api/users/{user_id}/games - Erro: Status inválido '{status}'.")
         return jsonify({'message': 'Status inválido. Use "jogando", "zerado" ou "abandonado".'}), 400
 
-    # Validação de autorização: verifica se o user_id da sessão corresponde ao user_id da rota
-    if session.get('user_id') != user_id: # Use user_id diretamente
-        print(f"[{request.method}] /api/users/{user_id}/games - Tentativa não autorizada de adicionar jogo. User da sessão: {session.get('user_id')}") # Debugging
+    # Validação de autorização: verifica se o user_id do token corresponde ao user_id da rota
+    if current_user_id != user_id:
+        print(f"[{request.method}] /api/users/{user_id}/games - Tentativa não autorizada de adicionar jogo. User do token: {current_user_id}")
         return jsonify({'message': 'Não autorizado a adicionar jogos a este perfil'}), 403
 
-    success, message = adicionar_ou_atualizar_jogo_usuario(user_id, nome_jogo, status) # Use user_id diretamente
+    success, message = adicionar_ou_atualizar_jogo_usuario(user_id, nome_jogo, status)
     if success:
-        print(f"[{request.method}] /api/users/{user_id}/games - Jogo '{nome_jogo}' para usuário {user_id}: {message}") # Debugging
+        print(f"[{request.method}] /api/users/{user_id}/games - Jogo '{nome_jogo}' para usuário {user_id}: {message}")
         return jsonify({'message': message}), 201 if "adicionado" in message else 200
-    print(f"[{request.method}] /api/users/{user_id}/games - Erro ao adicionar/atualizar jogo para user {user_id}: {message}") # Debugging
+    print(f"[{request.method}] /api/users/{user_id}/games - Erro ao adicionar/atualizar jogo para user {user_id}: {message}")
     return jsonify({'message': f'Erro: {message}'}), 500
 
 @app.route('/api/users/<int:user_id>/games_by_status', methods=['GET'])
@@ -475,12 +502,20 @@ def get_seguidores(user_id):
     return jsonify(seguidores), 200
 
 @app.route('/api/follow', methods=['POST'])
+@token_required
 def follow_user():
+    # Obter user_id do token JWT
+    seguidor_id = request.current_user['user_id']
+    
     data = request.get_json()
-    seguidor_id = data.get('seguidor_id')
     seguindo_id = data.get('seguindo_id')
-    if not all([seguidor_id, seguindo_id]):
-        return jsonify({'message': 'IDs obrigatórios'}), 400
+    
+    if not seguindo_id:
+        return jsonify({'message': 'ID do usuário a seguir é obrigatório'}), 400
+    
+    if seguidor_id == seguindo_id:
+        return jsonify({'message': 'Você não pode seguir a si mesmo'}), 400
+    
     criar_follow(seguidor_id, seguindo_id)
     return jsonify({'message': 'Agora você está seguindo esse usuário'}), 200
 
@@ -494,11 +529,12 @@ def search_users():
 
 
 @app.route('/api/users/<int:user_id>/games/<string:nome_jogo>', methods=['DELETE'])
+@token_required
 def remove_user_game(user_id, nome_jogo):
-    # Nota: Usamos session.get('user_id') para segurança, para garantir que apenas
-    # o usuário logado possa remover seus próprios jogos.
-    current_user_id = session.get('user_id')
-    if not current_user_id or current_user_id != user_id:
+    # Obter user_id do token JWT
+    current_user_id = request.current_user['user_id']
+    
+    if current_user_id != user_id:
         return jsonify({'message': 'Não autorizado a remover este jogo.'}), 403
 
     # Decodifica o nome do jogo, se ele vier encodado na URL
@@ -511,10 +547,13 @@ def remove_user_game(user_id, nome_jogo):
 
 
 @app.route('/api/users/<int:user_id>/reviews/<int:review_id>', methods=['DELETE'])
+@token_required
 def remove_user_review(user_id, review_id):
-    current_user_id = session.get('user_id')
-    print(f"DEBUG: Tentativa de remover avaliação {review_id} pelo user_id da URL: {user_id}. User_id na sessão: {current_user_id}") # Adicione esta linha
-    if not current_user_id or current_user_id != user_id:
+    # Obter user_id do token JWT
+    current_user_id = request.current_user['user_id']
+    
+    print(f"DEBUG: Tentativa de remover avaliação {review_id} pelo user_id da URL: {user_id}. User_id do token: {current_user_id}")
+    if current_user_id != user_id:
         return jsonify({'message': 'Não autorizado a remover esta avaliação.'}), 403
 
     if remover_avaliacao(review_id, user_id):
@@ -524,18 +563,16 @@ def remove_user_review(user_id, review_id):
     
 
 @app.route('/api/unfollow', methods=['POST'])
+@token_required
 def unfollow_user():
+    # Obter user_id do token JWT
+    seguidor_id = request.current_user['user_id']
+    
     data = request.get_json()
-    seguidor_id = data.get('seguidor_id')
     seguindo_id = data.get('seguindo_id')
 
-    if not all([seguidor_id, seguindo_id]):
-        return jsonify({'message': 'IDs de seguidor e seguido são obrigatórios'}), 400
-
-    # Certifique-se de que o usuário logado (seguidor_id) é quem está fazendo a requisição
-    current_user_id = session.get('user_id')
-    if not current_user_id or current_user_id != seguidor_id:
-        return jsonify({'message': 'Não autorizado a deixar de seguir esta pessoa.'}), 403
+    if not seguindo_id:
+        return jsonify({'message': 'ID do usuário a deixar de seguir é obrigatório'}), 400
 
     if remover_follow(seguidor_id, seguindo_id):
         return jsonify({'message': 'Deixou de seguir com sucesso.'}), 200
