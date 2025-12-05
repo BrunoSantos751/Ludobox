@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './Login.css';
+import { API_BASE_URL } from '../../config';
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -44,12 +45,11 @@ function Login() {
       setLoading(true);
 
       try {
-        const response = await fetch('https://ludobox.onrender.com/login_email', {
+        const response = await fetch(`${API_BASE_URL}/login_email`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include',
           body: JSON.stringify({
             email: formData.email,
             password: formData.senha,
@@ -59,9 +59,14 @@ function Login() {
         const data = await response.json();
 
         if (response.ok) {
-          setFormData({ email: '', senha: '' });
-          setErrors({});
-          window.location.href = "/";
+          if (data.token) {
+            localStorage.setItem('token', data.token);
+            window.location.href = '/'; // Redireciona para a página inicial após o login bem-sucedido
+          }
+          if (data.user_id) {
+            localStorage.setItem('user_id', data.user_id);
+          }
+          
         } else {
           setServerMessage(data.message);
         }
