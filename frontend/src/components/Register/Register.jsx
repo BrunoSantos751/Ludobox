@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './Register.css';
+import { API_BASE_URL } from '../../config';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -52,7 +53,7 @@ function Register() {
       setLoading(true);
       
       try {
-        const response = await fetch('https://ludobox.onrender.com/register', {
+        const response = await fetch(`${API_BASE_URL}/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

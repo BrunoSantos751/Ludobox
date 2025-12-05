@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import pfp from "../../assets/images/imagem-perfil.jpg";
 import './Tendencias.css';
+import { API_BASE_URL } from '../../config';
 
 export default function Tendencias() {
   const [avaliacoes, setAvaliacoes] = useState([]);
@@ -21,7 +22,7 @@ export default function Tendencias() {
 
   useEffect(() => {
     // Verifica status de login
-    fetch("https://ludobox.onrender.com/api/auth_status", {
+    fetch(`${API_BASE_URL}/api/auth_status`, {
       credentials: "include"
     })
       .then((res) => res.json())
@@ -52,7 +53,7 @@ export default function Tendencias() {
   }, [userId]);
 
   function fetchUserLikes(currentUserId) {
-    fetch(`https://ludobox.onrender.com/api/user_likes?user_id=${currentUserId}`)
+    fetch(`${API_BASE_URL}/api/user_likes?user_id=${currentUserId}`)
       .then(res => {
         if (!res.ok) {
           throw new Error('Erro ao carregar likes do usuário.');
@@ -69,7 +70,7 @@ export default function Tendencias() {
   }
 
   function carregarAvaliacoes() {
-    fetch('https://ludobox.onrender.com/avaliacoes/top')
+    fetch(`${API_BASE_URL}/avaliacoes/top`)
       .then(res => {
         if (!res.ok) {
           throw new Error('Erro ao carregar avaliações. Status: ' + res.status);
@@ -95,7 +96,7 @@ export default function Tendencias() {
     }
 
     const isCurrentlyLiked = likedEvaluations.has(avaliacao_id);
-    const endpoint = `https://ludobox.onrender.com/avaliacoes/toggle_like`;
+    const endpoint = `${API_BASE_URL}/avaliacoes/toggle_like`;
     
     fetch(endpoint, {
       method: "POST",
@@ -155,7 +156,7 @@ export default function Tendencias() {
     setFormData({ ...formData, nome_jogo: termo });
     if (termo.length > 2) {
       try {
-        const response = await fetch(`https://ludobox.onrender.com/api/games?search=${encodeURIComponent(termo)}&page_size=5`);
+        const response = await fetch(`${API_BASE_URL}/api/games?search=${encodeURIComponent(termo)}&page_size=5`);
         if (!response.ok) {
           throw new Error('Erro ao buscar sugestões de jogos.');
         }
@@ -181,7 +182,7 @@ export default function Tendencias() {
     }
 
     try {
-      const response = await fetch("https://ludobox.onrender.com/avaliacoes", {
+      const response = await fetch(`${API_BASE_URL}/avaliacoes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

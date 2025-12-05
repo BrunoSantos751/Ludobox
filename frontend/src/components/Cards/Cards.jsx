@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import './Cards.css';
+import { API_BASE_URL } from '../../config';
 
 export default function Cards({ filtro, paginaAtual = 1, setTotalPaginas = null, limite = 12 }) {
   const [jogos, setJogos] = useState([]);
 
   useEffect(() => {
-    let url = `https://ludobox.onrender.com/api/games`;
+    let url = `${API_BASE_URL}/api/games`;
     const params = [`page_size=${limite}`, `page=${paginaAtual}`];
 
     if (filtro?.ordenar) params.push(`ordering=${filtro.ordenar}`);

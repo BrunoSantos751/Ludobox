@@ -3,6 +3,7 @@ import './Perfil.css';
 import defaultAvatar from "../../assets/images/imagem-perfil.jpg"; // VERIFIQUE ESTE CAMINHO NOVAMENTE
 import { FaEdit, FaPlus, FaSearch, FaTimes, FaTrash } from 'react-icons/fa';
 import SeguidoresESeguindo from './SeguidoresESeguindo';
+import { API_BASE_URL } from '../../config';
 
 
 function Profile({ userId: loggedInUserId, username: propUsername }) {
@@ -48,7 +49,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
     console.log('Perfil.jsx: refreshFollowCounts disparado');
     if (loggedInUserId) {
       try {
-        const followersResponse = await fetch(`https://ludobox.onrender.com/api/users/${loggedInUserId}/seguidores`);
+        const followersResponse = await fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/seguidores`);
         if (followersResponse.ok) {
           const data = await followersResponse.json();
           setUserData(prev => ({
@@ -59,7 +60,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
             console.error('Falha ao buscar seguidores no refresh:', followersResponse.status);
         }
 
-        const followingResponse = await fetch(`https://ludobox.onrender.com/api/users/${loggedInUserId}/seguindo`);
+        const followingResponse = await fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/seguindo`);
         if (followingResponse.ok) {
           const data = await followingResponse.json();
           setUserData(prev => ({
@@ -82,7 +83,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
 
       const fetchUserProfile = async (idToFetch) => {
         try {
-          const response = await fetch(`https://ludobox.onrender.com/api/users/${idToFetch}/profile`);
+          const response = await fetch(`${API_BASE_URL}/api/users/${idToFetch}/profile`);
           if (!response.ok) {
             let errorDetails = `Status: ${response.status} ${response.statusText}`;
             try {
@@ -125,7 +126,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
 
       const fetchUserGamesByStatus = async (idToFetch) => {
         try {
-          const response = await fetch(`https://ludobox.onrender.com/api/users/${idToFetch}/games_by_status`);
+          const response = await fetch(`${API_BASE_URL}/api/users/${idToFetch}/games_by_status`);
           if (!response.ok) {
             throw new Error('Falha ao buscar jogos do utilizador por status');
           }
@@ -152,7 +153,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
 
       const fetchUserReviews = async (idToFetch) => {
         try {
-          const response = await fetch(`https://ludobox.onrender.com/api/users/${idToFetch}/reviews`);
+          const response = await fetch(`${API_BASE_URL}/api/users/${idToFetch}/reviews`);
           if (!response.ok) {
             throw new Error('Falha ao buscar avaliações do utilizador');
           }
@@ -205,7 +206,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
       return;
     }
     try {
-      const response = await fetch(`https://ludobox.onrender.com/api/users/${userData.userId}/profile`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/${userData.userId}/profile`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -244,7 +245,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
     setNewGameName(e.target.value);
     if (e.target.value.length > 2) {
       try {
-        const response = await fetch(`https://ludobox.onrender.com/api/games?search=${encodeURIComponent(e.target.value)}&page_size=5`);
+        const response = await fetch(`${API_BASE_URL}/api/games?search=${encodeURIComponent(e.target.value)}&page_size=5`);
         if (!response.ok) {
           throw new Error('Falha ao buscar resultados da pesquisa de jogos');
         }
@@ -273,7 +274,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
     }
 
     try {
-      const response = await fetch(`https://ludobox.onrender.com/api/users/${loggedInUserId}/games`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/games`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -290,7 +291,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
       console.log(data.message);
       setIsAddingGame(false);
 
-      const gamesResponse = await fetch(`https://ludobox.onrender.com/api/users/${loggedInUserId}/games_by_status`);
+      const gamesResponse = await fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/games_by_status`);
       if (!gamesResponse.ok) {
         throw new Error('Falha ao buscar novamente os jogos do utilizador por status após adicionar');
       }
@@ -336,7 +337,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
 
     try {
       const encodedGameName = encodeURIComponent(gameName);
-      const response = await fetch(`https://ludobox.onrender.com/api/users/${loggedInUserId}/games/${encodedGameName}`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/games/${encodedGameName}`, {
         method: 'DELETE',
         credentials: 'include'
       });
@@ -349,7 +350,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
       const data = await response.json();
       console.log(data.message);
 
-      const gamesResponse = await fetch(`https://ludobox.onrender.com/api/users/${loggedInUserId}/games_by_status`);
+      const gamesResponse = await fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/games_by_status`);
       if (!gamesResponse.ok) {
         throw new Error('Falha ao buscar novamente os jogos do utilizador por status após remover');
       }
@@ -388,7 +389,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
     }
 
     try {
-      const url = `https://ludobox.onrender.com/api/users/${loggedInUserId}/reviews/${reviewId}`;
+      const url = `${API_BASE_URL}/api/users/${loggedInUserId}/reviews/${reviewId}`;
       console.log(`Fazendo requisição DELETE para: ${url}`);
       const response = await fetch(url, {
         method: 'DELETE',
@@ -406,7 +407,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
       const data = await response.json();
       console.log('Mensagem de sucesso da API:', data.message);
 
-      const reviewsResponse = await fetch(`https://ludobox.onrender.com/api/users/${loggedInUserId}/reviews`);
+      const reviewsResponse = await fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/reviews`);
       if (!reviewsResponse.ok) {
         throw new Error('Falha ao buscar novamente as avaliações do utilizador após remover');
       }

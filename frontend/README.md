@@ -1,6 +1,28 @@
-# React + Vite
+# React + Vite - Ludobox Frontend
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+
+## Configuration de Ambiente (Environment Configuration)
+
+### Configurar a URL da API
+
+1. Crie um arquivo `.env.local` na raiz do projeto (frontend/)
+2. Copie o conteúdo de `.env.example`
+3. Altere a URL conforme necessário:
+
+```env
+VITE_API_BASE_URL=https://seu-servidor.com
+```
+
+**Importante:** O arquivo `.env.local` não deve ser enviado ao repositório (já está no `.gitignore`).
+
+### Desenvolvimento Local
+
+Para usar um servidor local durante desenvolvimento:
+
+```env
+VITE_API_BASE_URL=http://localhost:5000
+```
 
 Currently, two official plugins are available:
 

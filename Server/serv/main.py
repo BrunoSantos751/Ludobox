@@ -11,14 +11,14 @@ from jwt_auth import generate_token, token_required, optional_token, get_current
 
 app = Flask(__name__)
 # Configuração de CORS para permitir requisições do frontend
-CORS(app, origins=['https://trabalho-engenharia-de-software-phi.vercel.app', 'http://localhost:5173', 'http://localhost:3000'])      
+CORS(app, origins=['*'], supports_credentials=True)      
 
 
 
 RAWG_API_KEY = '7221b0332ccb4921ad5eb4f3da1bddbb' 
 STEAM_API_KEY = '8D3606789A4D5453D6977CEDC0C10AD8' 
-RETURN_URL = 'https://ludobox.onrender.com/authorize'
-FRONTEND_URL = 'https://trabalho-engenharia-de-software-phi.vercel.app/'
+RETURN_URL = 'http://localhost:8080/authorize'
+FRONTEND_URL = 'http://localhost:5173/authorize'
 
 @app.route('/')
 def index():
@@ -31,7 +31,7 @@ def login():
         "?openid.ns=http://specs.openid.net/auth/2.0"
         "&openid.mode=checkid_setup"
         f"&openid.return_to={RETURN_URL}"
-        "&openid.realm=https://ludobox.onrender.com/"
+        "&openid.realm=http://localhost:8080/"
         "&openid.identity=http://specs.openid.net/auth/2.0/identifier_select"
         "&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select"
     )
@@ -319,8 +319,6 @@ def top_avaliacoes_route():
 @app.route('/logout', methods=['POST'])
 @optional_token
 def logout():
-    # Com JWT, o logout é feito no frontend removendo o token
-    # Não há necessidade de invalidar no servidor (a menos que use blacklist)
     print("Logout solicitado.")
     return jsonify({'message': 'Logout realizado com sucesso'}), 200
 

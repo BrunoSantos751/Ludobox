@@ -8,7 +8,9 @@ import Login from './components/Login/Login';
 import Navbar from './components/Navbar/Navbar'; 
 import Tendencias from './components/Tendencias/Tendencias';
 import Footer from './components/Footer/Footer';
-import Perfil from './components/Perfil/Perfil'; // Ajuste o caminho conforme sua estrutura de pastas
+import Perfil from './components/Perfil/Perfil'; 
+import SteamAuth from './components/Login/Steamauth';
+import { API_BASE_URL } from './config';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -31,8 +33,12 @@ function App() {
       
       while (attempts < MAX_ATTEMPTS) {
         try {
-          const response = await fetch('https://ludobox.onrender.com/api/auth_status', {
-            credentials: 'include' // Importante: envia os cookies de sessão!
+          const token = localStorage.getItem('token');
+
+          const response = await fetch(`${API_BASE_URL}/api/auth_status`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            }
           });
           const data = await response.json();
           console.log(`App.jsx - Status de autenticação recebido (Tentativa ${attempts + 1}):`, data); // DEBUG
@@ -81,7 +87,7 @@ function App() {
 
   // Função chamada ao clicar em "Sair"
   function handleLogout() {
-    fetch('https://ludobox.onrender.com/logout', {
+    fetch(`${API_BASE_URL}/logout`, {
       method: 'POST',
       credentials: 'include' 
     })
@@ -89,6 +95,8 @@ function App() {
         setIsLoggedIn(false);
         setUserName('');
         setUserId(null);
+        localStorage.removeItem('token'); // Remove o token do armazenamento local
+        localStorage.removeItem('user_id'); // Remove o user_id do armazenamento local
         // Limpa também o estado 'último conhecido bom' ao fazer logout
         lastKnownAuth.current = { isLoggedIn: false, userId: null, userName: '' }; 
         window.location.reload(); // Recarrega a página para garantir a atualização
@@ -119,8 +127,8 @@ function App() {
         <Route path='/catalogo' element={<Catalogo />} />
         <Route path='/login' element={<Login />} />
         <Route path='/tendencias' element={<Tendencias />}/>
-        {/* O componente Perfil agora recebe userId e username como props */}
         <Route path='/perfil' element={<Perfil userId={userId} username={userName} />}/>
+        <Route path='/authorize' element={<SteamAuth />} />
       </Routes>
       <Footer />
     </BrowserRouter>

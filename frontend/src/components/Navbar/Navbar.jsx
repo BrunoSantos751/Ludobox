@@ -3,6 +3,7 @@ import { useState } from "react";
 import logo from "../../assets/images/logo-ludobox.png";
 import steam from "../../assets/images/steam-entrar.png";
 import './Navbar.css';
+import { API_BASE_URL } from '../../config';
 
 // Recebe props do App.jsx
 export default function Navbar({ isLoggedIn, userName, onLogout }) {
@@ -13,7 +14,7 @@ export default function Navbar({ isLoggedIn, userName, onLogout }) {
     e.preventDefault(); // Impede o comportamento padrão do link
 
     try {
-      const response = await fetch("https://ludobox.onrender.com/logout", {
+      const response = await fetch(`${API_BASE_URL}/logout`, {
         method: "POST",
         credentials: "include" // Importante para enviar cookies de sessão
       });
@@ -75,7 +76,7 @@ export default function Navbar({ isLoggedIn, userName, onLogout }) {
             <>
               {/* Botão de Entrar com Steam se não logado */}
               <li className="nav-item login-steam">
-                <a href="https://ludobox.onrender.com/login" onClick={closeMobileMenu} className="nav-links-mobile login-steam">
+                <a href={`${API_BASE_URL}/login`} onClick={closeMobileMenu} className="nav-links-mobile login-steam">
                   <img src={steam} alt="Steam" />
                   Entrar com a Steam
                 </a>
