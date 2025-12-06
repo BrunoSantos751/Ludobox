@@ -17,8 +17,8 @@ CORS(app, origins=['*'], supports_credentials=True)
 
 RAWG_API_KEY = '7221b0332ccb4921ad5eb4f3da1bddbb' 
 STEAM_API_KEY = '8D3606789A4D5453D6977CEDC0C10AD8' 
-RETURN_URL = 'http://localhost:8080/authorize'
-FRONTEND_URL = 'http://localhost:5173/authorize'
+RETURN_URL = 'http://ludobox.vercel.app/authorize'
+FRONTEND_URL = 'http://ludoboxf.vercel.app/authorize'
 
 @app.route('/')
 def index():
@@ -31,7 +31,7 @@ def login():
         "?openid.ns=http://specs.openid.net/auth/2.0"
         "&openid.mode=checkid_setup"
         f"&openid.return_to={RETURN_URL}"
-        "&openid.realm=http://localhost:8080/"
+        "&openid.realm=http://ludobox.vercel.app/"
         "&openid.identity=http://specs.openid.net/auth/2.0/identifier_select"
         "&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select"
     )
