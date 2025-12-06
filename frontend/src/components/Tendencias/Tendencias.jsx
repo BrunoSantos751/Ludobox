@@ -107,7 +107,8 @@ export default function Tendencias() {
     fetch(endpoint, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem('token')}`
       },
       body: JSON.stringify({ avaliacao_id: avaliacao_id, user_id: userId })
     })
