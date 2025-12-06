@@ -21,35 +21,41 @@ export default function Tendencias() {
   const [showEvaluationForm, setShowEvaluationForm] = useState(false); // Novo estado para controlar a visibilidade do formulário
 
   useEffect(() => {
-    // Verifica status de login
-    fetch(`${API_BASE_URL}/api/auth_status`, {
-      credentials: "include"
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.logged_in) {
-          setIsLoggedIn(true);
-          setUserId(data.user_id);
-          setUserName(data.user_name);
-        } else {
+    (async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/api/auth_status`, {
+          headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+
+        if (!response.ok) {
+          console.warn("Falha ao verificar auth_status:", response.status);
           setIsLoggedIn(false);
           setUserId(null);
           setUserName("");
+        } else {
+          const data = await response.json();
+          console.log("Tendencias.jsx - Status de autenticação recebido:", data);
+          if (data.logged_in) {
+            setIsLoggedIn(true);
+            setUserId(data.user_id);
+            setUserName(data.user_name);
+          } else {
+            setIsLoggedIn(false);
+            setUserId(null);
+            setUserName("");
+          }
         }
-      })
-      .catch((err) => console.error("Erro ao verificar status de login:", err));
-
-    carregarAvaliacoes();
-  }, [userId]); // Dependência adicionada para recarregar avaliações quando o userId mudar
-
-  useEffect(() => {
-    // Carrega os likes do usuário quando o userId estiver disponível
-    if (userId) {
-      fetchUserLikes(userId);
-    } else {
-      // Limpa os likes se o usuário não estiver logado
-      setLikedEvaluations(new Set());
-    }
+      } catch (err) {
+        console.error("Erro verificando auth_status:", err);
+        setIsLoggedIn(false);
+        setUserId(null);
+        setUserName("");
+      } finally {
+        // Carrega avaliações independentemente do status de autenticação
+        carregarAvaliacoes();
+      }
+    })();
   }, [userId]);
 
   function fetchUserLikes(currentUserId) {

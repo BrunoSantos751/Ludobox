@@ -25,7 +25,7 @@ function App() {
   // Função para verificar o status de autenticação do backend com re-tentativas e persistência
   useEffect(() => {
     let attempts = 0;
-    const MAX_ATTEMPTS = 5; // Número máximo de tentativas de verificar o login
+    const MAX_ATTEMPTS = 1; // Número máximo de tentativas de verificar o login
     const RETRY_DELAY = 150; // Atraso entre as tentativas em milissegundos
 
     const checkAuthStatus = async () => {

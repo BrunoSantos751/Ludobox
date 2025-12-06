@@ -274,9 +274,11 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
     }
 
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/games`, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ nome_jogo: selectedGame.name, status: newGameStatus }),
