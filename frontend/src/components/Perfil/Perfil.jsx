@@ -341,7 +341,9 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
       const encodedGameName = encodeURIComponent(gameName);
       const response = await fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/games/${encodedGameName}`, {
         method: 'DELETE',
-        credentials: 'include'
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        }
       });
 
       if (!response.ok) {
