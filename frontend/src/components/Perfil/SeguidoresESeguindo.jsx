@@ -86,13 +86,14 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
       return;
     }
     try {
+      const token = localStorage.getItem('token'); 
       const res = await fetch(`${API_BASE_URL}/api/follow`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ seguidor_id: userId, seguindo_id: idToFollow }),
-        credentials: 'include'
       });
       if (!res.ok) {
         const errorData = await res.json();
