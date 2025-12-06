@@ -121,9 +121,9 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
         method: 'POST', // O método HTTP precisa corresponder ao backend
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ seguidor_id: userId, seguindo_id: idToUnfollow }),
-        credentials: 'include'
+        body: JSON.stringify({ seguidor_id: userId, seguindo_id: idToUnfollow })
       });
 
       if (!res.ok) {
