@@ -3,8 +3,8 @@ import './Perfil.css';
 import defaultAvatar from "../../assets/images/imagem-perfil.jpg"; // VERIFIQUE ESTE CAMINHO NOVAMENTE
 import { FaEdit, FaPlus, FaSearch, FaTimes, FaTrash } from 'react-icons/fa';
 import SeguidoresESeguindo from './SeguidoresESeguindo';
+import { useSearchParams } from 'react-router-dom';
 import { API_BASE_URL } from '../../config';
-
 
 function Profile({ userId: loggedInUserId, username: propUsername }) {
   const [userGamesByStatus, setUserGamesByStatus] = useState({
@@ -15,7 +15,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
   const [recentReviews, setRecentReviews] = useState([]);
 
   const [userData, setUserData] = useState({
-    userId: loggedInUserId,
+    userId: loggedInUserId || null,
     username: propUsername || 'Carregando nome...',
     bio: 'Nenhuma biografia definida.',
     avatar_url: defaultAvatar || '', // Adicionado fallback para string vazia
@@ -42,14 +42,17 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
   const [activeFollowTab, setActiveFollowTab] = useState('buscar');
   const [topSearchTerm, setTopSearchTerm] = useState('');
 
-  const isMyProfile = true;
+  const [searchParams] = useSearchParams();
+  const urlId = searchParams.get('id');
+  const isMyProfile = (urlId == loggedInUserId);
+  console.log(`Perfil.jsx - loggedInUserId: ${loggedInUserId}, propUsername: ${propUsername}, urlId: ${urlId}, isMyProfile: ${isMyProfile}`);
 
 
   const refreshFollowCounts = async () => {
     console.log('Perfil.jsx: refreshFollowCounts disparado');
-    if (loggedInUserId) {
+    if (urlId) {
       try {
-        const followersResponse = await fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/seguidores`);
+        const followersResponse = await fetch(`${API_BASE_URL}/api/users/${urlId}/seguidores`);
         if (followersResponse.ok) {
           const data = await followersResponse.json();
           setUserData(prev => ({
@@ -60,7 +63,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
             console.error('Falha ao buscar seguidores no refresh:', followersResponse.status);
         }
 
-        const followingResponse = await fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/seguindo`);
+        const followingResponse = await fetch(`${API_BASE_URL}/api/users/${urlId}/seguindo`);
         if (followingResponse.ok) {
           const data = await followingResponse.json();
           setUserData(prev => ({
@@ -78,8 +81,8 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
 
 
   useEffect(() => {
-    if (loggedInUserId) {
-      console.log('Perfil.jsx - Fetching data for loggedInUserId:', loggedInUserId);
+    if (urlId) {
+      console.log('Perfil.jsx - Fetching data for urlId:', urlId);
 
       const fetchUserProfile = async (idToFetch) => {
         try {
@@ -171,15 +174,15 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
         }
       };
 
-      fetchUserProfile(loggedInUserId);
-      fetchUserGamesByStatus(loggedInUserId);
-      fetchUserReviews(loggedInUserId);
+      fetchUserProfile(urlId);
+      fetchUserGamesByStatus(urlId);
+      fetchUserReviews(urlId);
       refreshFollowCounts();
 
     } else {
-      console.log("Perfil.jsx - loggedInUserId não disponível.");
+      console.log("Perfil.jsx - urlId não disponível.");
     }
-  }, [loggedInUserId]);
+  }, [urlId]);
 
 
   const renderStars = (rating) => {
@@ -267,7 +270,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
   };
 
   const handleSaveGame = async () => {
-    if (!loggedInUserId || !selectedGame || !newGameStatus) {
+    if (!urlId || !selectedGame || !newGameStatus) {
       console.error("ID de utilizador logado, jogo selecionado ou status do jogo em falta.");
       alert("Por favor, selecione um jogo e um status.");
       return;
@@ -275,7 +278,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/games`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/${urlId}/games`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -293,7 +296,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
       console.log(data.message);
       setIsAddingGame(false);
 
-      const gamesResponse = await fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/games_by_status`);
+      const gamesResponse = await fetch(`${API_BASE_URL}/api/users/${urlId}/games_by_status`);
       if (!gamesResponse.ok) {
         throw new Error('Falha ao buscar novamente os jogos do utilizador por status após adicionar');
       }
@@ -328,7 +331,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
   };
 
   const handleDeleteGame = async (gameName) => {
-    if (!loggedInUserId) {
+    if (!urlId) {
       console.error("Não autorizado a remover jogo.");
       return;
     }
@@ -339,7 +342,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
 
     try {
       const encodedGameName = encodeURIComponent(gameName);
-      const response = await fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/games/${encodedGameName}`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/${urlId}/games/${encodedGameName}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -354,7 +357,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
       const data = await response.json();
       console.log(data.message);
 
-      const gamesResponse = await fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/games_by_status`);
+      const gamesResponse = await fetch(`${API_BASE_URL}/api/users/${urlId}/games_by_status`);
       if (!gamesResponse.ok) {
         throw new Error('Falha ao buscar novamente os jogos do utilizador por status após remover');
       }
@@ -381,19 +384,19 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
   };
 
   const handleDeleteReview = async (reviewId) => {
-    if (!loggedInUserId) {
+    if (!urlId) {
       console.error("Não autorizado a remover avaliação.");
       return;
     }
 
-    console.log(`Tentando remover avaliação com ID: ${reviewId} pelo user_id logado: ${loggedInUserId}`);
+    console.log(`Tentando remover avaliação com ID: ${reviewId} pelo user_id logado: ${urlId}`);
     if (!window.confirm("Tem certeza que deseja remover esta avaliação?")) {
       console.log("Remoção de avaliação cancelada pelo usuário.");
       return;
     }
 
     try {
-      const url = `${API_BASE_URL}/api/users/${loggedInUserId}/reviews/${reviewId}`;
+      const url = `${API_BASE_URL}/api/users/${urlId}/reviews/${reviewId}`;
       console.log(`Fazendo requisição DELETE para: ${url}`);
       const response = await fetch(url, {
         method: 'DELETE',
@@ -411,7 +414,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
       const data = await response.json();
       console.log('Mensagem de sucesso da API:', data.message);
 
-      const reviewsResponse = await fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/reviews`);
+      const reviewsResponse = await fetch(`${API_BASE_URL}/api/users/${urlId}/reviews`);
       if (!reviewsResponse.ok) {
         throw new Error('Falha ao buscar novamente as avaliações do utilizador após remover');
       }
@@ -469,7 +472,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
             <FaTimes />
           </button>
           <SeguidoresESeguindo
-            userId={loggedInUserId}
+            userId={urlId}
             initialTab={activeFollowTab}
             initialSearchTerm={topSearchTerm}
             onFollowStatusChange={refreshFollowCounts}

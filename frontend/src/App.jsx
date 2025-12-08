@@ -120,7 +120,7 @@ function App() {
   return (
     <BrowserRouter>
       {/* A Navbar recebe os estados de login para exibir os links corretos */}
-      <Navbar isLoggedIn={isLoggedIn} userName={userName} onLogout={handleLogout} />
+      <Navbar isLoggedIn={isLoggedIn} userName={userName} userId={userId} onLogout={handleLogout} />
       <Routes>
         <Route path='/' element={<Home />} />
         <Route path='/register' element={<Register />} />

@@ -6,7 +6,7 @@ import './Navbar.css';
 import { API_BASE_URL } from '../../config';
 
 // Recebe props do App.jsx
-export default function Navbar({ isLoggedIn, userName, onLogout }) {
+export default function Navbar({ isLoggedIn, username, userId, onLogout }) {
   const [click, setClick] = useState(false);
 
   // Função para lidar com o clique no botão "Sair"
@@ -63,7 +63,7 @@ export default function Navbar({ isLoggedIn, userName, onLogout }) {
             <>
               <li className="nav-item login-steam">
                 {/* Link para o perfil se logado */}
-                <a href="/perfil" onClick={closeMobileMenu} className="nav-links-mobile profile-link">
+                <a href={`/perfil?id=${userId}`} onClick={closeMobileMenu} className="nav-links-mobile profile-link">
                   Meu perfil
                 </a>
               </li>
