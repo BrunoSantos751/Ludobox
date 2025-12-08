@@ -463,6 +463,21 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
         </div>
       </div>
 
+        {showFollowPanel && (
+        <div className="seguidores-wrapper">
+          <button className="close-follow-panel-button" onClick={closeFollowPanel}>
+            <FaTimes />
+          </button>
+          <SeguidoresESeguindo
+            userId={loggedInUserId}
+            initialTab={activeFollowTab}
+            initialSearchTerm={topSearchTerm}
+            onFollowStatusChange={refreshFollowCounts}
+          />
+        </div>
+      )}
+
+
       <div className="profile-header">
         <img src={userData.avatar_url} alt="Avatar do Usuário" className="profile-avatar" />
         <div className="profile-info">
@@ -495,20 +510,6 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
           </button>
         )}
       </div>
-
-      {showFollowPanel && (
-        <div className="seguidores-wrapper">
-          <button className="close-follow-panel-button" onClick={closeFollowPanel}>
-            <FaTimes />
-          </button>
-          <SeguidoresESeguindo
-            userId={loggedInUserId}
-            initialTab={activeFollowTab}
-            initialSearchTerm={topSearchTerm}
-            onFollowStatusChange={refreshFollowCounts}
-          />
-        </div>
-      )}
 
       <div className="profile-content">
         <div className="profile-games-section">
