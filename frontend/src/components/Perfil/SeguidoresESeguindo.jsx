@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { FaUserPlus, FaSearch, FaUserMinus } from 'react-icons/fa';
 import defaultAvatar from "../../assets/images/imagem-perfil.jpg"; // VERIFIQUE ESTE CAMINHO
 import { API_BASE_URL } from '../../config';
+import { Link } from 'react-router-dom';
 
 function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowStatusChange }) {
   const [seguindo, setSeguindo] = useState([]);
@@ -189,7 +190,9 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
             {seguidores.length > 0 ? (
               seguidores.map(user => (
                 <div key={user.id} className="user-card">
-                  <img src={user.avatar_url || defaultAvatar} alt={user.nome} className="user-avatar" />
+                  <Link to={`/perfil?id=${user.id}`}>
+                    <img src={user.avatar_url || defaultAvatar} alt={user.nome} className="user-avatar" />
+                  </Link>
                   <span>{user.nome}</span>
                   {/* Condição para seguir/deixar de seguir na lista de seguidores */}
                   {!isFollowing(user.id) && user.id !== userId && (
@@ -218,7 +221,9 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
             {seguindo.length > 0 ? (
               seguindo.map(user => (
                 <div key={user.id} className="user-card">
-                  <img src={user.avatar_url || defaultAvatar} alt={user.nome} className="user-avatar" />
+                  <Link to={`/perfil?id=${user.id}`}>
+                    <img src={user.avatar_url || defaultAvatar} alt={user.nome} className="user-avatar" />
+                  </Link>
                   <span>{user.nome}</span>
                   {user.id !== userId && ( // Não permite deixar de seguir a si mesmo
                     <button onClick={() => deixarDeSeguirUsuario(user.id)} className="unfollow-button">
@@ -254,7 +259,9 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
               {buscaUsuarios.length > 0 ? (
                 buscaUsuarios.map(user => (
                   <div key={user.id} className="user-card">
-                    <img src={user.avatar_url || defaultAvatar} alt={user.nome} className="user-avatar" />
+                    <Link to={`/perfil?id=${user.id}`}>  
+                      <img src={user.avatar_url || defaultAvatar} alt={user.nome} className="user-avatar" />
+                    </Link>
                     <span>{user.nome}</span>
                     {/* Verifica se o usuário já está sendo seguido ou é o próprio usuário logado */}
                     {!isFollowing(user.id) && user.id !== userId && (
