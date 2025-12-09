@@ -196,3 +196,21 @@
     padding-right: 0; /* Remove o padding em telas pequenas */
   }
 }
+
+
+.tendencias-comentario-pfp a,
+.tendencias-comentario-pfp a img,
+.tendencias-comentario-pfp img {
+  display: inline-block;       /* garante bloco para controlar tamanho */
+  width: 36px;                 /* ajuste conforme seu layout */
+  height: 36px;                /* ajuste conforme seu layout */
+  border-radius: 50%;          /* deixa circular */
+  overflow: hidden;            /* corta bordas do conteúdo */
+}
+
+.tendencias-comentario-pfp a img,
+.tendencias-comentario-pfp img {
+  object-fit: cover;           /* mantém proporção e preenche o círculo */
+  width: 100%;
+  height: 100%;
+}

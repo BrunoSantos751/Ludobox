@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import pfp from "../../assets/images/imagem-perfil.jpg";
 import './Tendencias.css';
+import { Link } from 'react-router-dom';
 import { API_BASE_URL } from '../../config';
 
 export default function Tendencias() {
@@ -343,7 +344,9 @@ export default function Tendencias() {
                   )}
                   <div className="tendencias-comentario-container">
                     <div className="tendencias-comentario-pfp">
-                      <img src={avatarSrc} alt="Foto de perfil" />
+                      <Link to={`/perfil?id=${avaliacao.user_id}`}>
+                        <img src={avatarSrc} alt="Foto de perfil" />
+                       </Link> 
                     </div>
                     <div className="tendencias-comentario-info">
                       <div className="pessoal">
