@@ -123,7 +123,7 @@ Para segurança, recomenda-se criar um ficheiro `.env` na pasta `Server/serv` (o
   * `SECRET_KEY`: Chave secreta para assinatura de sessões/JWT.
   * `DATABASE_URL`: String de conexão ao PostgreSQL.
 
-## 👨‍💻 Equipa de Desenvolvimento
+## 👨‍💻 Equipe de Desenvolvimento
 
   * [Fabio Reis](https://github.com/Fabioo082)
   * [Bruno Santos](https://github.com/BrunoSantos751)
