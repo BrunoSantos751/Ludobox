@@ -10,7 +10,7 @@ O projeto utiliza a **API da RAWG** para obter dados atualizados sobre milhares 
   * **Gestão de Biblioteca:** Classificação de jogos em três categorias:
       * 🕹️ *A Jogar*
       * ✅ *Terminado* (Zerado)
-      * g *Abandonado*
+      * ❌ *Abandonado*
   * **Sistema de Avaliação:** Atribuição de notas e criação de críticas escritas (reviews).
   * **Interação Social:**
       * Seguir e deixar de seguir outros utilizadores.
