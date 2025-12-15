@@ -18,8 +18,8 @@ CORS(app, origins=['http://localhost:5173', 'https://ludoboxf.vercel.app','https
 
 RAWG_API_KEY = '7221b0332ccb4921ad5eb4f3da1bddbb' 
 STEAM_API_KEY = '8D3606789A4D5453D6977CEDC0C10AD8' 
-RETURN_URL = 'http://ludobox.vercel.app/authorize'
-FRONTEND_URL = 'http://ludoboxf.vercel.app/authorize'
+RETURN_URL = 'https://ludobox.vercel.app/authorize'
+FRONTEND_URL = 'https://ludoboxf.vercel.app/authorize'
 
 @app.route('/')
 def index():
