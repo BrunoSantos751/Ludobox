@@ -6,18 +6,16 @@ function SteamAuth() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = searchParams.get('token');
+    const status = searchParams.get('login');
+    
 
-
-    if (token) {
-      localStorage.setItem('token', token);
-
+    if (status) {
       console.log("Steam login bem-sucedido! Token salvo.");
       
       // Redireciona para home
       navigate('/');
     } else {
-      console.error("Erro: Token não fornecido na URL");
+      console.error("Erro: Status de login Steam não encontrado nos parâmetros URL.");
       navigate('/login');
     }
   }, [searchParams, navigate]);
