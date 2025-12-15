@@ -60,9 +60,9 @@ function Login() {
         const data = await response.json();
 
         if (response.ok) {
-          if (data.id || data.user_id) {
-            window.location.href = '/'; // Redireciona para a página inicial após o login bem-sucedido
-          }
+          
+          window.location.href = '/'; // Redireciona para a página inicial após o login bem-sucedido
+          
           if (data.user_id) {
             localStorage.setItem('user_id', data.user_id);
           }
