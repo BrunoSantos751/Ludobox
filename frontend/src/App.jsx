@@ -33,11 +33,11 @@ function App() {
       
       while (attempts < MAX_ATTEMPTS) {
         try {
-          const token = localStorage.getItem('token');
 
           const response = await fetch(`${API_BASE_URL}/api/auth_status`, {
+            credentials: "include",
             headers: {
-              'Authorization': `Bearer ${token}`,
+              contentType: 'application/json',
             }
           });
           const data = await response.json();
@@ -94,8 +94,7 @@ function App() {
       .then(() => {
         setIsLoggedIn(false);
         setUserName('');
-        setUserId(null);
-        localStorage.removeItem('token'); // Remove o token do armazenamento local
+        setUserId(null); 
         localStorage.removeItem('user_id'); // Remove o user_id do armazenamento local
         // Limpa também o estado 'último conhecido bom' ao fazer logout
         lastKnownAuth.current = { isLoggedIn: false, userId: null, userName: '' }; 

@@ -24,9 +24,8 @@ export default function Tendencias() {
   useEffect(() => {
     (async () => {
       try {
-        const token = localStorage.getItem('token');
         const response = await fetch(`${API_BASE_URL}/api/auth_status`, {
-          headers: token ? { "Authorization": `Bearer ${token}` } : {}
+          credentials: "include",
         });
 
         if (!response.ok) {
@@ -107,9 +106,9 @@ export default function Tendencias() {
     
     fetch(endpoint, {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem('token')}`
       },
       body: JSON.stringify({ avaliacao_id: avaliacao_id, user_id: userId })
     })
@@ -192,9 +191,9 @@ export default function Tendencias() {
     try {
       const response = await fetch(`${API_BASE_URL}/avaliacoes`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({ ...formData, user_id: userId }),
       });

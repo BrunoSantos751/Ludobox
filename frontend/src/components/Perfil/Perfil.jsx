@@ -277,11 +277,10 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
     }
 
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/api/users/${urlId}/games`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ nome_jogo: selectedGame.name, status: newGameStatus }),
@@ -344,8 +343,9 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
       const encodedGameName = encodeURIComponent(gameName);
       const response = await fetch(`${API_BASE_URL}/api/users/${urlId}/games/${encodedGameName}`, {
         method: 'DELETE',
+        credentials: "include",
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          contentType: 'application/json',
         }
       });
 

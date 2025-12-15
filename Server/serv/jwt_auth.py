@@ -60,22 +60,22 @@ def verify_token(token):
 
 def get_token_from_request():
     """
-    Extrai o token JWT do header Authorization da requisição
-    
-    Returns:
-        str: Token JWT ou None se não encontrado
+    Extrai o token JWT dos cookies (prioridade) ou do header Authorization
     """
-    auth_header = request.headers.get('Authorization')
-    
-    if not auth_header:
-        return None
-    
-    # Formato esperado: "Bearer <token>"
-    try:
-        token = auth_header.split(' ')[1]
+    # 1. Tenta pegar dos cookies (Novo padrão)
+    token = request.cookies.get('token')
+    if token:
         return token
-    except IndexError:
-        return None
+
+    # 2. Fallback para o header Authorization (Caso precise testar via Postman sem cookies)
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        try:
+            return auth_header.split(' ')[1]
+        except IndexError:
+            return None
+    
+    return None
 
 def get_current_user():
     """

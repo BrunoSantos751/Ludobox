@@ -87,12 +87,11 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
       return;
     }
     try {
-      const token = localStorage.getItem('token'); 
       const res = await fetch(`${API_BASE_URL}/api/follow`, {
         method: 'POST',
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ seguidor_id: userId, seguindo_id: idToFollow }),
       });
@@ -119,10 +118,10 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
   const deixarDeSeguirUsuario = async (idToUnfollow) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/unfollow`, {
-        method: 'POST', // O método HTTP precisa corresponder ao backend
+        method: 'POST', 
+        credentials: "include",
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({ seguidor_id: userId, seguindo_id: idToUnfollow })
       });

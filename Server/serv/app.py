@@ -11,7 +11,8 @@ from jwt_auth import generate_token, token_required, optional_token, get_current
 
 app = Flask(__name__)
 # Configuração de CORS para permitir requisições do frontend
-CORS(app, origins=['*'], supports_credentials=True)      
+# Em app.py
+CORS(app, origins=['http://localhost:5173', 'https://ludoboxf.vercel.app','https://ludobox.vercel.app'], supports_credentials=True)      
 
 
 
@@ -61,9 +62,17 @@ def authorize():
             # Gerar token JWT
             token = generate_token(user_id, player_data['personaname'], 'steam')
             
-            # Redirecionar para o frontend com o token na URL (ou usar outro método)
-            # Opção 1: Passar token na URL (menos seguro, mas funciona para OAuth)
-            return redirect(f"{FRONTEND_URL}?token={token}&login=steam")
+            response = redirect(f"{FRONTEND_URL}?login=steam_success")
+            response.set_cookie(
+                'token',                
+                token,  
+                httponly=True,         
+                secure=True,
+                samesite='None',
+                max_age=60*60*24*7      
+            )
+            return response
+                
         else:
             return 'Erro ao obter ID do usuário.', 500
     else:
@@ -86,16 +95,25 @@ def login_email():
         # Gerar token JWT
         token = generate_token(user['id'], user['nome'], 'email')
         print(f"Login por email bem-sucedido: user_id={user['id']}, user_name={user['nome']}")
-        return jsonify({
+        response = jsonify({
             "message": "Login bem-sucedido!",
-            "token": token,
             "user": {
                 "id": user['id'],
                 "nome": user['nome'],
                 "email": user.get('email'),
                 "avatar_url": user.get('avatar_url')
             }
-        }), 200
+        })
+        # Definir o cookie com o token JWT
+        response.set_cookie(
+            'token',                
+            token,                  
+            httponly=True,         
+            secure=True,             
+            samesite='None',         
+            max_age=60*60*24*7      
+        )
+        return response, 200
     else:
         print("Tentativa de login por email falhou: Email ou senha incorretos.")
         return jsonify({"message": "Email ou senha incorretos."}), 401
@@ -128,15 +146,24 @@ def register():
             # Gerar token JWT automaticamente após registro
             token = generate_token(new_user['id'], new_user['nome'], 'email')
             print(f"Usuário {nome} registrado com sucesso!")
-            return jsonify({
+            response = jsonify({
                 "message": "Usuário registrado com sucesso!",
-                "token": token,
                 "user": {
                     "id": new_user['id'],
                     "nome": new_user['nome'],
                     "email": new_user.get('email')
                 }
-            }), 201
+            })
+            # Definir o cookie com o token JWT
+            response.set_cookie(
+                'token',                
+                token,                  
+                httponly=True,         
+                secure=True,             
+                samesite='None',         
+                max_age=60*60*24*7      
+            )
+            return response, 201
         else:
             return jsonify({"message": "Usuário registrado, mas erro ao gerar token."}), 201
     else:
@@ -320,7 +347,11 @@ def top_avaliacoes_route():
 @optional_token
 def logout():
     print("Logout solicitado.")
-    return jsonify({'message': 'Logout realizado com sucesso'}), 200
+    response = jsonify({'message': 'Logout realizado com sucesso'})
+    
+    # REMOVER O COOKIE
+    response.delete_cookie('token', samesite='None', secure=True, httponly=True)
+    return response, 200
 
 # --- ROTAS PARA PERFIL ---
 

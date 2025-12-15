@@ -47,6 +47,7 @@ function Login() {
       try {
         const response = await fetch(`${API_BASE_URL}/login_email`, {
           method: 'POST',
+          credentials: "include",
           headers: {
             'Content-Type': 'application/json',
           },
@@ -59,8 +60,7 @@ function Login() {
         const data = await response.json();
 
         if (response.ok) {
-          if (data.token) {
-            localStorage.setItem('token', data.token);
+          if (data.id || data.user_id) {
             window.location.href = '/'; // Redireciona para a página inicial após o login bem-sucedido
           }
           if (data.user_id) {
