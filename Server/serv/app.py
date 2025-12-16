@@ -7,6 +7,7 @@ from comandos_dados import * # Importa todas as funções de interação com o D
 from flask_cors import CORS
 from urllib.parse import unquote
 import dotenv as dote
+import os
 from jwt_auth import generate_token, token_required, optional_token, get_current_user
 
 dote.load_dotenv()
@@ -18,8 +19,8 @@ CORS(app, origins=['http://localhost:5173', 'https://ludoboxf.vercel.app','https
 
 
 
-RAWG_API_KEY = dote.get('RAWG_API_KEY')
-STEAM_API_KEY = dote.get('STEAM_API_KEY')
+RAWG_API_KEY = os.getenv('RAWG_API_KEY')
+STEAM_API_KEY = os.getenv('STEAM_API_KEY')
 RETURN_URL = 'https://ludoboxf.vercel.app/server/authorize'
 FRONTEND_URL = 'https://ludoboxf.vercel.app/authorize'
 
