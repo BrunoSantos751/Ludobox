@@ -284,7 +284,6 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ nome_jogo: selectedGame.name, status: newGameStatus }),
-        credentials: 'include'
       });
 
       if (!response.ok) {
