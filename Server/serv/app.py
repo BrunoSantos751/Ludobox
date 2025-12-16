@@ -18,7 +18,7 @@ CORS(app, origins=['http://localhost:5173', 'https://ludoboxf.vercel.app','https
 
 RAWG_API_KEY = '7221b0332ccb4921ad5eb4f3da1bddbb' 
 STEAM_API_KEY = '8D3606789A4D5453D6977CEDC0C10AD8' 
-RETURN_URL = 'https://ludobox.vercel.app/authorize'
+RETURN_URL = 'https://ludoboxf.vercel.app/server/authorize'
 FRONTEND_URL = 'https://ludoboxf.vercel.app/authorize'
 
 @app.route('/')
@@ -32,7 +32,7 @@ def login():
         "?openid.ns=http://specs.openid.net/auth/2.0"
         "&openid.mode=checkid_setup"
         f"&openid.return_to={RETURN_URL}"
-        "&openid.realm=https://ludobox.vercel.app/"
+        "&openid.realm=https://ludoboxf.vercel.app/server"
         "&openid.identity=http://specs.openid.net/auth/2.0/identifier_select"
         "&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select"
     )

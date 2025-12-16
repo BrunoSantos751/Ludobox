@@ -1,9 +1,12 @@
 {
   "rewrites": [
-    
+    {
+      "source": "/server/:path*",
+      "destination": "https://ludobox.vercel.app/:path*"
+    },
     {
       "source": "/(.*)",
-      "destination": "/"
+      "destination": "/index.html"
     }
   ]
 }
