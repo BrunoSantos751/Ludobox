@@ -6,8 +6,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from comandos_dados import * # Importa todas as funções de interação com o DB
 from flask_cors import CORS
 from urllib.parse import unquote
-import traceback
+import dotenv as dote
 from jwt_auth import generate_token, token_required, optional_token, get_current_user
+
+dote.load_dotenv()
 
 app = Flask(__name__)
 # Configuração de CORS para permitir requisições do frontend
@@ -16,8 +18,8 @@ CORS(app, origins=['http://localhost:5173', 'https://ludoboxf.vercel.app','https
 
 
 
-RAWG_API_KEY = '7221b0332ccb4921ad5eb4f3da1bddbb' 
-STEAM_API_KEY = '8D3606789A4D5453D6977CEDC0C10AD8' 
+RAWG_API_KEY = dote.get('RAWG_API_KEY')
+STEAM_API_KEY = dote.get('STEAM_API_KEY')
 RETURN_URL = 'https://ludoboxf.vercel.app/server/authorize'
 FRONTEND_URL = 'https://ludoboxf.vercel.app/authorize'
 
@@ -68,7 +70,7 @@ def authorize():
                 token,  
                 httponly=True,         
                 secure=True,
-                samesite='None',
+                samesite='Lax',
                 max_age=60*60*24*7      
             )
             return response
@@ -110,7 +112,7 @@ def login_email():
             token,                  
             httponly=True,         
             secure=True,             
-            samesite='None',         
+            samesite='Lax',         
             max_age=60*60*24*7      
         )
         return response, 200
@@ -160,7 +162,7 @@ def register():
                 token,                  
                 httponly=True,         
                 secure=True,             
-                samesite='None',         
+                samesite='Lax',         
                 max_age=60*60*24*7      
             )
             return response, 201
