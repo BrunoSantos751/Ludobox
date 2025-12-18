@@ -263,12 +263,12 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
                     </Link>
                     <span>{user.nome}</span>
                     {/* Verifica se o usuário já está sendo seguido ou é o próprio usuário logado */}
-                    {!isFollowing(user.id) && user.id !== userId && (
+                    {!isFollowing(userId)  (
                       <button onClick={() => seguirUsuario(user.id)} className="seguir-button">
                         <FaUserPlus /> Seguir
                       </button>
                     )}
-                    {isFollowing(user.id) && user.id !== userId && (
+                    {isFollowing(userId)  (
                       <button onClick={() => deixarDeSeguirUsuario(user.id)} className="unfollow-button">
                         <FaUserMinus /> Deixar de Seguir
                       </button>
