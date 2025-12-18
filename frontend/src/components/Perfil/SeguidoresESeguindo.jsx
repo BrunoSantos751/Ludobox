@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom';
 function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowStatusChange, loggedInUserId }) {
   const [seguindo, setSeguindo] = useState([]);
   const [seguidores, setSeguidores] = useState([]);
+  const [seguindourl, setSeguindoUrl] = useState([]);
+  const [seguidoresurl, setSeguidoresUrl] = useState([]);
   const [buscaUsuarios, setBuscaUsuarios] = useState([]);
   const [termoBusca, setTermoBusca] = useState(initialSearchTerm || '');
   const [activeTab, setActiveTab] = useState(initialTab || 'buscar');
@@ -28,6 +30,23 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
   useEffect(() => {
     fetchFollowData();
   }, [loggedInUserId, fetchFollowData]); // Adicionado fetchFollowData às dependências
+
+  const fetchFollowDataUrl = useCallback(() => {
+    if (!userId) return;
+
+    fetch(`${API_BASE_URL}/api/users/${userId}/seguindo`)
+      .then(res => res.json())
+      .then(data => setSeguindoUrl(Array.isArray(data) ? data : []));
+
+    fetch(`${API_BASE_URL}/api/users/${userId}/seguidores`)
+      .then(res => res.json())
+      .then(data => setSeguidoresUrl(Array.isArray(data) ? data : []));
+  }, [userId]);
+
+
+  useEffect(() => {
+    fetchFollowData();
+  }, [loggedInUserId, fetchFollowData]);
 
 
   useEffect(() => {
@@ -177,8 +196,8 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
         <div className="tab-content">
           <h2 className="section-title">MEUS SEGUIDORES</h2>
           <div className="seguidores-list">
-            {seguidores.length > 0 ? (
-              seguidores.map(user => (
+            {seguidoresurl.length > 0 ? (
+              seguidoresurl.map(user => (
                 <div key={user.id} className="user-card">
                   <Link to={`/perfil?id=${user.id}`}>
                     <img src={user.avatar_url || defaultAvatar} alt={user.nome} className="user-avatar" />
@@ -208,8 +227,8 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
         <div className="tab-content">
           <h2 className="section-title">ESTOU SEGUINDO</h2>
           <div className="seguindo-list">
-            {seguindo.length > 0 ? (
-              seguindo.map(user => (
+            {seguindourl.length > 0 ? (
+              seguindourl.map(user => (
                 <div key={user.id} className="user-card">
                   <Link to={`/perfil?id=${user.id}`}>
                     <img src={user.avatar_url || defaultAvatar} alt={user.nome} className="user-avatar" />
