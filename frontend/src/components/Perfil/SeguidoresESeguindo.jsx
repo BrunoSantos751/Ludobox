@@ -45,8 +45,8 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
 
 
   useEffect(() => {
-    fetchFollowData();
-  }, [loggedInUserId, fetchFollowData]);
+    fetchFollowDataUrl();
+  }, [userId, fetchFollowDataUrl]);
 
 
   useEffect(() => {
