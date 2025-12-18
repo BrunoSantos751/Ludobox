@@ -101,7 +101,7 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
       }
       console.log('Seguindo com sucesso!');
       // Otimistic update: Adiciona o usuário à lista de 'seguindo' imediatamente
-      setSeguindo(prevSeguindo => [...prevSeguindo, { id: idToFollow, /* outras props do user se disponíveis */ }]);
+      //setSeguindo(prevSeguindo => [...prevSeguindo, { id: idToFollow }]);
       
       fetchFollowData(); // Atualiza as listas completas após seguir
       handleBuscarUsuarios(); // Re-executa a busca para atualizar o botão
