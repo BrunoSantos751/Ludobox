@@ -475,6 +475,7 @@ function Profile({ userId: loggedInUserId, username: propUsername }) {
             initialTab={activeFollowTab}
             initialSearchTerm={topSearchTerm}
             onFollowStatusChange={refreshFollowCounts}
+            loggedInUserId={loggedInUserId}
           />
         </div>
       )}

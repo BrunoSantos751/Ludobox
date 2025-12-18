@@ -4,7 +4,7 @@ import defaultAvatar from "../../assets/images/imagem-perfil.jpg"; // VERIFIQUE 
 import { API_BASE_URL } from '../../config';
 import { Link } from 'react-router-dom';
 
-function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowStatusChange }) {
+function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowStatusChange, loggedInUserId }) {
   const [seguindo, setSeguindo] = useState([]);
   const [seguidores, setSeguidores] = useState([]);
   const [buscaUsuarios, setBuscaUsuarios] = useState([]);
@@ -154,7 +154,7 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
   };
 
   const isFollowing = (targetUserId) => {
-    return seguindo.some(user => userId === targetUserId);
+    return seguindo.some(loggedInUserId === targetUserId);
   };
 
   return (
