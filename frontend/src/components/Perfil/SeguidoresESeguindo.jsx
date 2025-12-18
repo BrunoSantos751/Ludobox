@@ -12,32 +12,22 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
   const [activeTab, setActiveTab] = useState(initialTab || 'buscar');
 
   // Função para buscar os seguidores e quem o usuário está seguindo
-  const fetchFollowData = useCallback(() => { // Usar useCallback para otimização
-    if (!userId) return;
+  const fetchFollowData = useCallback(() => {
+    if (!loggedInUserId) return;
 
-    // Buscar quem o usuário logado está seguindo
-    fetch(`${API_BASE_URL}/api/users/${userId}/seguindo`)
-      .then(res => {
-        if (!res.ok) throw new Error('Falha ao buscar quem você segue');
-        return res.json();
-      })
-      .then(data => setSeguindo(Array.isArray(data) ? data : []))
-      .catch(err => console.error('Erro ao buscar quem você segue:', err));
+    fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/seguindo`)
+      .then(res => res.json())
+      .then(data => setSeguindo(Array.isArray(data) ? data : []));
 
-    // Buscar os seguidores do usuário logado
-    fetch(`${API_BASE_URL}/api/users/${userId}/seguidores`)
-      .then(res => {
-        if (!res.ok) throw new Error('Falha ao buscar seguidores');
-        return res.json();
-      })
-      .then(data => setSeguidores(Array.isArray(data) ? data : []))
-      .catch(err => console.error('Erro ao buscar seguidores:', err));
-  }, [userId]); // Depende de userId para refetch
+    fetch(`${API_BASE_URL}/api/users/${loggedInUserId}/seguidores`)
+      .then(res => res.json())
+      .then(data => setSeguidores(Array.isArray(data) ? data : []));
+  }, [loggedInUserId]);
 
 
   useEffect(() => {
     fetchFollowData();
-  }, [userId, fetchFollowData]); // Adicionado fetchFollowData às dependências
+  }, [loggedInUserId, fetchFollowData]); // Adicionado fetchFollowData às dependências
 
 
   useEffect(() => {
@@ -154,7 +144,8 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
   };
 
   const isFollowing = (targetUserId) => {
-    return seguindo.some(loggedInUserId === targetUserId);
+    if (!loggedInUserId) return false;
+    return seguindo.some(user => user.id === targetUserId);
   };
 
   return (
