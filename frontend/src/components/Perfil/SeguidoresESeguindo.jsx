@@ -154,7 +154,7 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
   };
 
   const isFollowing = (targetUserId) => {
-    return seguindo.some( userId === targetUserId);
+    return seguindo.some(user => userId === targetUserId);
   };
 
   return (
