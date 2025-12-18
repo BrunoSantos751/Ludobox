@@ -182,7 +182,6 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
           style={{ position: 'relative' }} // Adicionado para o badge
         >
           Seguindo
-          {seguindo.length > 0 && <span className="follow-count-badge">{seguindo.length}</span>}
         </button>
         <button
           className={`tab-button ${activeTab === 'buscar' ? 'active' : ''}`}
@@ -234,7 +233,13 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
                     <img src={user.avatar_url || defaultAvatar} alt={user.nome} className="user-avatar" />
                   </Link>
                   <span>{user.nome}</span>
-                  { ( // Não permite deixar de seguir a si mesmo
+                  {/* Condição para seguir/deixar de seguir na lista de seguidores */}
+                  {!isFollowing(user.id) &&  (
+                    <button onClick={() => seguirUsuario(user.id)} className="seguir-button">
+                      <FaUserPlus /> Seguir
+                    </button>
+                  )}
+                  {isFollowing(user.id) &&  (
                     <button onClick={() => deixarDeSeguirUsuario(user.id)} className="unfollow-button">
                       <FaUserMinus /> Deixar de Seguir
                     </button>
