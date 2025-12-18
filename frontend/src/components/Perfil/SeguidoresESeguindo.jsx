@@ -194,12 +194,12 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
                   </Link>
                   <span>{user.nome}</span>
                   {/* Condição para seguir/deixar de seguir na lista de seguidores */}
-                  {!isFollowing(user.id) && user.id !== userId && (
+                  {!isFollowing(user.id) &&  (
                     <button onClick={() => seguirUsuario(user.id)} className="seguir-button">
                       <FaUserPlus /> Seguir
                     </button>
                   )}
-                  {isFollowing(user.id) && user.id !== userId && (
+                  {isFollowing(user.id) &&  (
                     <button onClick={() => deixarDeSeguirUsuario(user.id)} className="unfollow-button">
                       <FaUserMinus /> Deixar de Seguir
                     </button>
@@ -224,7 +224,7 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
                     <img src={user.avatar_url || defaultAvatar} alt={user.nome} className="user-avatar" />
                   </Link>
                   <span>{user.nome}</span>
-                  {user.id !== userId && ( // Não permite deixar de seguir a si mesmo
+                  { ( // Não permite deixar de seguir a si mesmo
                     <button onClick={() => deixarDeSeguirUsuario(user.id)} className="unfollow-button">
                       <FaUserMinus /> Deixar de Seguir
                     </button>
@@ -263,12 +263,12 @@ function SeguidoresESeguindo({ userId, initialTab, initialSearchTerm, onFollowSt
                     </Link>
                     <span>{user.nome}</span>
                     {/* Verifica se o usuário já está sendo seguido ou é o próprio usuário logado */}
-                    {!isFollowing(userId) && user.id !== userId && (
+                    {!isFollowing(user.id) &&  (
                       <button onClick={() => seguirUsuario(user.id)} className="seguir-button">
                         <FaUserPlus /> Seguir
                       </button>
                     )}
-                    {isFollowing(userId) && user.id !== userId && (
+                    {isFollowing(user.id) &&  (
                       <button onClick={() => deixarDeSeguirUsuario(user.id)} className="unfollow-button">
                         <FaUserMinus /> Deixar de Seguir
                       </button>
