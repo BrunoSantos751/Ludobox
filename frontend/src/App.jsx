@@ -10,6 +10,7 @@ import Tendencias from './components/Tendencias/Tendencias';
 import Footer from './components/Footer/Footer';
 import Perfil from './components/Perfil/Perfil'; 
 import SteamAuth from './components/Login/Steamauth';
+import JogoDetalhes from './components/JogoDetalhes/JogoDetalhes';
 import { API_BASE_URL } from './config';
 
 function App() {
@@ -128,6 +129,7 @@ function App() {
         <Route path='/tendencias' element={<Tendencias />}/>
         <Route path='/perfil' element={<Perfil userId={userId} username={userName} />}/>
         <Route path='/authorize' element={<SteamAuth />} />
+        <Route path='/game/:id' element={<JogoDetalhes />} />
       </Routes>
       <Footer />
     </BrowserRouter>

@@ -612,6 +612,37 @@ def unfollow_user():
         # Retorna 404 se o follow não foi encontrado (talvez já não estivesse seguindo)
         return jsonify({'message': 'Falha ao deixar de seguir ou follow não encontrado.'}), 404
 
+@app.route('/api/games/<int:game_id>', methods=['GET'])
+def get_game_details(game_id):
+    # 1. Buscar detalhes no RAWG
+    rawg_url = f'https://api.rawg.io/api/games/{game_id}?key={RAWG_API_KEY}'
+    
+    try:
+        response = requests.get(rawg_url)
+        response.raise_for_status()
+        game_data = response.json()
+        # 2. Buscar avaliações do jogo no banco de dados
+        avaliacoes = buscar_avaliacoes_por_jogo(game_data['name']) 
+        # Calcular a média da comunidade
+        media_comunidade = 0
+        if avaliacoes:
+            soma_notas = sum(float(rev['nota']) for rev in avaliacoes)
+            media_comunidade = soma_notas / len(avaliacoes)
+
+        return jsonify({
+            'details': {
+                'name': game_data.get('name'),
+                'description': game_data.get('description'),
+                'background_image': game_data.get('background_image'),
+                'genres': [g['name'] for g in game_data.get('genres', [])],
+                'rating': game_data.get('rating'),
+                'released': game_data.get('released')
+            },
+            'reviews': avaliacoes,
+            'community_rating': round(media_comunidade, 1)
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 

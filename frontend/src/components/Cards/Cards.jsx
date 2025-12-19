@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import './Cards.css';
 import { API_BASE_URL } from '../../config';
+import { Link } from 'react-router-dom';
 
 export default function Cards({ filtro, paginaAtual = 1, setTotalPaginas = null, limite = 12 }) {
   const [jogos, setJogos] = useState([]);
@@ -29,17 +30,24 @@ export default function Cards({ filtro, paginaAtual = 1, setTotalPaginas = null,
   return (
     <li className="li-card">
       {jogos.map(jogo => (
-        <div className="card" key={jogo.id}>
-          <div className="jogo-poster">
-            <img src={jogo.background_image} alt={jogo.name} />
+        <Link 
+          to={`/game/${jogo.id}`} 
+          key={jogo.id} 
+          className="card-link" 
+          style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+        >
+          <div className="card">
+            <div className="jogo-poster">
+              <img src={jogo.background_image} alt={jogo.name} />
+            </div>
+            <div className="jogo-infos">
+              <p className="jogo-name">{jogo.name}</p>
+              <p className="jogo-nota">
+                <span className="star">⭐</span> {jogo.rating.toFixed(1)}
+              </p>
+            </div>
           </div>
-          <div className="jogo-infos">
-            <p className="jogo-name">{jogo.name}</p>
-            <p className="jogo-nota">
-              <span className="star">⭐</span> {jogo.rating.toFixed(1)}
-            </p>
-          </div>
-        </div>
+        </Link>
       ))}
     </li>
   );

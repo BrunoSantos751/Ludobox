@@ -1,6 +1,5 @@
 import Cards from '../Cards/Cards';
 import './Home.css';
-import Footer from '../Footer/Footer';
 
 export default function Home() {
   return (
@@ -13,18 +12,7 @@ export default function Home() {
             <a href="/catalogo">VER TODOS</a>
           </div>
           <ul className="cards-Ma">
-          {/* name → alfabética (A-Z)
-          -name → alfabética (Z-A)
-          rating → ordem crescente
-          -rating → melhor avaliação primeiro
-          released → data de lançamento
-          Para gêneros, você precisa passar o ID ou slug (por exemplo, action, shooter)*/}
             <Cards filtro={{ ordenar: '-rating' }} limite={10} />
-
-            {/*
-            <Cards filtro={{ tipo: "ordenar", valor: "name" }} />     A-Z
-            <Cards filtro={{ tipo: "genero", valor: "action,shooter" }} />  gêneros
-            // */}
           </ul>
         </div>
 
@@ -34,17 +22,7 @@ export default function Home() {
             <a href="/catalogo">VER TODOS</a>
           </div>
           <ul className="cards-Cat">
-          {/* name → alfabética (A-Z)
-          -name → alfabética (Z-A)
-          rating → ordem crescente
-          -rating → melhor avaliação primeiro
-          released → data de lançamento
-          Para gêneros, você precisa passar o ID ou slug (por exemplo, action, shooter)*/}
             <Cards filtro={{ tipo: "ordenar", valor: "" }} limite={10} />
-            {/*
-            <Cards filtro={{ tipo: "ordenar", valor: "name" }} />     A-Z
-            <Cards filtro={{ tipo: "genero", valor: "action,shooter" }} />  gêneros
-            // */}
           </ul>
         </div>
         

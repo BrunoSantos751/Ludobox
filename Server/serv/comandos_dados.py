@@ -74,6 +74,29 @@ def buscar_avaliacoes_por_usuario(user_id):
     conn.close()
     return avaliacoes
 
+
+def buscar_avaliacoes_por_jogo(nome_jogo):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+            SELECT 
+                a.avaliacao_id, 
+                a.user_id, 
+                a.nota, 
+                a.comentario, 
+                a.data_avaliacao, 
+                a.likes,
+                u.nome AS user_nome, 
+                u.avatar_url
+            FROM avaliacoes a
+            JOIN users u ON a.user_id = u.id
+            WHERE a.nome_jogo = %s
+            ORDER BY a.data_avaliacao DESC
+    """, (nome_jogo,))
+    avaliacoes = cursor.fetchall()
+    conn.close()
+    return avaliacoes
+
 def toggle_like_avaliacao(user_id, avaliacao_id):
     conn = get_connection()
     c = conn.cursor()
