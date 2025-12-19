@@ -3,7 +3,7 @@ import './Cards.css';
 import { API_BASE_URL } from '../../config';
 import { Link } from 'react-router-dom';
 
-export default function Cards({ filtro, paginaAtual = 1, setTotalPaginas = null, limite = 12 }) {
+export default function Cards({ filtro, paginaAtual = 1, setTotalPaginas = null, limite = 10 }) {
   const [jogos, setJogos] = useState([]);
 
   useEffect(() => {
