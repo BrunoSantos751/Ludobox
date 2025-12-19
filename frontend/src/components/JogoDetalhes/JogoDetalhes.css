@@ -164,9 +164,3 @@
 .likes-count {
     font-size: 0.85rem;
 }
-
-.description p {
-    margin-bottom: 10px; /* Espaço entre os parágrafos do jogo */
-    color: #ddd;
-    line-height: 1.6;
-}
